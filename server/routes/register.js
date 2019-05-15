@@ -1,4 +1,4 @@
-const express = require('experess')
+const express = require('express')
 const router = express.Router()
 const mysql = require('mysql')
 const bcrypt = require('bcrypt')
@@ -7,12 +7,14 @@ const connection = mysql.createConnection({
   host: 'localhost',
   user: 'root',
   password: 'pu-sannoho-muranda-bi-',
-  database: 'chat'
+  database: 'janken_rating'
 })
 
 router.post('/', (req, res, next) => {
-  const name = req.query.name
-  const plainPassword = req.query.password
+  const name = req.body.name
+  const plainPassword = req.body.password
+  console.log(name, plainPassword)
+  // console.log(req)
   if (name.length > 10) {
     res.status(400).json({ status: 'ng', err: 'nameLenErr' })
   } else if (plainPassword.length < 8 && plainPassword.length > 64) {
@@ -20,12 +22,15 @@ router.post('/', (req, res, next) => {
   }
   bcrypt.hash(plainPassword, saltRounds, (err, hash) => {
     if (err) {
+      console.log('ハッシュ化！！！')
       res.status(500).json({ status: 'ng', err: 'internalServerErr' })
       return
     }
     connection.query(`INSERT INTO players (name, password) VALUES (?, ?);`, [name, hash], (err, result) => {
       if (err) {
+        console.log('データベース！！！')
         res.status(500).json({ status: 'ng', err: 'internalServerErr' })
+        console.log(err)
         return
       }
       res.json({

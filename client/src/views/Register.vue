@@ -1,34 +1,81 @@
 <template>
   <div>
-    <div v-if="!hasRegistered">
-      名前を入力してね！(~10文字)<br>
-      <input type="text" v-model="name"><br>
-      <div v-if="!isNameOK">
-        名前が長すぎるぞ！！！！！
+    <form v-if="!hasRegistered" class="uk-form-stacked uk-margin-large">
+    <!-- <div v-if="!hasRegistered"> -->
+      <div class="uk-margin">
+        <label class="uk-form-label">名前を入力してね！(~10文字)</label>
+        <div class="uk-form-controls">
+          <input
+            type="text"
+            class="uk-input uk-form-width-medium"
+            v-bind:class="nameClass"
+            v-model="name"
+            v-on:input="checkIfEndNamePending"
+            v-on:blur="isNameValPending = false"
+          >
+          <div class="uk-text-danger">
+            <div v-if="nameStatus === 'invalidLen'">
+              名前ダッッッッッッッサ！！！！！！
+            </div>
+            <div v-if="nameStatus === 'empty'">
+              せめてなんか書けよ！！！！！！
+            </div>
+          </div>
+        </div>
       </div>
-      新しいパスワードを入力してね！(8~64文字)<br>
-      <input type="text" v-model="password"><br>
-      <div v-if="!isPassOK">
-        パスワードの長さをどうにかしろ！！！！！
+
+      <div class="uk-margin">
+        <label class="uk-form-label">新しいパスワードを入力してね！(8~64文字)</label>
+        <div class="uk-form-controls">
+          <input 
+            type="password"
+            class="uk-input uk-form-width-medium"
+            v-model="password"
+            v-bind:class="passClass"
+            v-on:input="checkIfEndPassPending"
+            v-on:blur="isPassValPending = false"
+          ><br>
+          <div class="uk-text-danger">
+            <div v-if="passStatus === 'tooLong'">
+              お前それ覚えれるの？？？？
+            </div>
+            <div v-if="passStatus === 'tooShort'">
+              せきゅりてぃ意識もって❤️
+            </div>
+          </div>
+        </div>
       </div>
-      <div v-if="errs.internalServerErr">
-        サーバーの処理が失敗しました<br>
-        後ほどお試しください
+
+      <div class="uk-margin">
+        <vk-button 
+          type="primary"
+          v-on:click="register()"
+          v-bind:disabled="!(isNameOk && isPassOk)"
+        >
+          アカウント登録
+        </vk-button>
+        <div v-if="errs.internalServerErr">
+          サーバーの処理が失敗しました。
+          後ほどお試しください。
+        </div>
       </div>
-      <button v-on:click="register()">アカウント登録</button>
-    </div>
+    <!-- </div> -->
+    </form>
+    <!-- 
     <div v-else>
       ようこそ{{name}}さん！！！！<br>
-      プロフィールを設定しよう！<br>
-      ひとことコメントを入力しよう(しろ)！<br>
+      プロフィールを設定<br><br>
+      ひとことコメント<br>
       <input type="text" v-model="comment">
-      <!-- アイコンを設定しよう！<br>
-      <input type="file" v-model="icon"> -->
-    </div>
+      アイコンを設定しよう！<br>
+      <input type="file" v-model="icon">
+    </div> -->
   </div>
 </template>
 
 <script>
+import { Button/*, ButtonLink */} from 'vuikit/lib/button'
+
 
 export default {
   name: 'register',
@@ -41,10 +88,24 @@ export default {
         nameLenErr: false,
         passLenErr: false,
         internalServerErr: false
-      }
+      },
+      canRegisterName: true,
+      isNameValPending: true,
+      isPassValPending: true
+
     }
   },
+  components: {
+    VkButton: Button,
+    // VkButtonLink: ButtonLink
+  },
   methods: {
+    checkIfEndNamePending () {
+      if (this.name.length > 0) this.isNameValPending = false
+    },
+    checkIfEndPassPending () {
+      if (this.password.length >= 8) this.isPassValPending = false
+    },
     register () {
       const sendObj = {
         //受けとったデータを代入
@@ -58,7 +119,8 @@ export default {
         'Accept': 'application/json',
         'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
       }
-      fetch('./register', { method, headers, body }).then((res) => res.json()).then (res => {
+      fetch('/api/register', { method, headers, body }).then((res) => res.json()).then (res => {
+        console.log(res)
         if (res.status === 'ok') {
           this.hasRegistered = true
         } else {
@@ -69,11 +131,36 @@ export default {
     }
   },
   computed: {
-    isNameOK () {
-      return this.name <= 10 || !this.errs.nameLenErr
+    isNameOk () {
+      return this.name.length >= 1 && this.name.length <= 10 && !this.errs.nameLenErr
     },
-    isPassOK () {
-      return (this.password >= 8 && this.password <= 64) || !this.errs.passLenErr
+    nameStatus () {
+      if (this.isNameValPending) return 'pending'
+      if (!this.canRegisterName) return 'duplicated'
+      if (this.isNameOk) return 'ok'
+      if (this.name.length === 0) return 'empty'
+      if (this.name.length > 10) return 'invalidLen'
+      return 'ng'
+    },
+    nameClass () {
+      if (this.nameStatus === 'pending') return ''
+      if (this.nameStatus === 'ok') return 'uk-form-success'
+      return 'uk-form-danger'
+    },
+    isPassOk () {
+      return this.password.length >= 8 && this.password.length <= 64 && !this.errs.passLenErr
+    },
+    passStatus () {
+      if (this.isPassValPending) return 'pending'
+      if (this.isPassOk) return 'ok'
+      if (this.password.length < 8) return 'tooShort'
+      if (this.password.length > 64) return 'tooLong'
+      return 'ng'
+    },
+    passClass () {
+      if (this.passStatus === 'pending') return ''
+      if (this.passStatus === 'ok') return 'uk-form-success'
+      return 'uk-form-danger'
     }
   }
 }

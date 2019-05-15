@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 
 const registerRouter = require('./routes/register')
+const loginRouter = require('./routes/login')
 
 const app = express()
 
@@ -13,5 +14,7 @@ app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
-app.use('/register', registerRouter)
+app.use('/api/register', registerRouter)
+app.use('/api/login', loginRouter)
+app.listen(3000)
 module.exports = app
