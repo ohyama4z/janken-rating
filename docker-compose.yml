@@ -1,0 +1,48 @@
+version: '3.3'
+
+services:
+  mysql:
+    image: mysql:8.0
+    volumes:
+      - ./mysql/init:/docker-entrypoint-initdb.d
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/logs:/var/log/mysql
+      - ./mysql/my.cnf:/etc/mysql/my.cnf
+    
+    environment:
+      - MYSQL_DATABASE=janken_rating
+      - MYSQL_USER=janken
+      - MYSQL_PASSWORD=rating
+      - MYSQL_ROOT_PASSWORD=pu-sannoho-muranda-bi-
+      - TZ=Asia/Tokyo
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mysql
+      - PMA_USER=root
+      - PMA_PASSWORD=pu-sannoho-muranda-bi-
+    links:
+      - mysql
+    ports:
+      - 8080:80
+
+  server:
+    build: ./server
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    links:
+      - mysql
+
+  client_dev:
+    build: ./client
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    links:
+      - server
+    ports:
+      - 3000:8080
+

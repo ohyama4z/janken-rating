@@ -1,0 +1,6 @@
+# ignore all files
+**
+
+# exclude with stating `!`lines
+!package.json
+!package-lock.json
