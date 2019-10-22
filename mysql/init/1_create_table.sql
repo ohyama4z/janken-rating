@@ -72,7 +72,11 @@ CREATE TABLE `session` (
   `token` varchar(100) COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
+CREATE TABLE `room_players` (
+  `room_id` INT(100) NOT NULL ,
+  `leader` BOOLEAN NOT NULL ,
+  `player_id` INT(100) NOT NULL
+) ENGINE = InnoDB;
 -- Indexes for dumped tables
 --
 

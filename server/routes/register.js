@@ -17,24 +17,39 @@ router.post('/', (req, res, next) => {
   // console.log(req)
   if (name.length > 10) {
     res.status(400).json({ status: 'ng', err: 'nameLenErr' })
-  } else if (plainPassword.length < 8 && plainPassword.length > 64) {
-    res.status(400).json({ status: 'ng', err: 'passLenErr' })
+    return
   }
-  bcrypt.hash(plainPassword, saltRounds, (err, hash) => {
+  if (plainPassword.length < 8 && plainPassword.length > 64) {
+    res.status(400).json({ status: 'ng', err: 'passLenErr' })
+    return
+  }
+
+  // db
+  connection.query('SELECT COUNT(*) AS num FROM `players` WHERE `name`=?',[name],(err,result) => {
     if (err) {
-      console.log('ハッシュ化！！！')
       res.status(500).json({ status: 'ng', err: 'internalServerErr' })
       return
     }
-    connection.query(`INSERT INTO players (name, password) VALUES (?, ?);`, [name, hash], (err, result) => {
+    if (result[0].num > 0) {
+      res.status(400).json({ status: 'ng', err: 'nameConflictedErr' })
+      return
+    }
+    bcrypt.hash(plainPassword, saltRounds, (err, hash) => {
       if (err) {
-        console.log('データベース！！！')
+        console.log('ハッシュ化！！！')
         res.status(500).json({ status: 'ng', err: 'internalServerErr' })
-        console.log(err)
         return
       }
-      res.json({
-        status: 'ok'
+      connection.query(`INSERT INTO players (name, password) VALUES (?, ?);`, [name, hash], (err, result) => {
+        if (err) {
+          console.log('データベース！！！')
+          res.status(500).json({ status: 'ng', err: 'internalServerErr' })
+          console.log(err)
+          return
+        }
+        res.json({
+          status: 'ok'
+        })
       })
     })
   })

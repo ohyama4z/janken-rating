@@ -14,6 +14,9 @@
         <input class="uk-input uk-form-width-medium uk-form-large" type="text" v-model="password">
         </div>
       </div>
+      <div v-if="isFailedLogin">
+        ログインに失敗しました
+      </div>
       <button v-on:click="login()" class="uk-button uk-button-primary">ログイン</button>
     </div>
   </div>
@@ -33,7 +36,9 @@ export default {
   data () {
     return {
     name: '',
-    password:''
+    password: '',
+    token: '',
+    isFailedLogin: false
     }
   },
   methods: {
@@ -42,6 +47,7 @@ export default {
         name: this.name,
         password: this.password
       }
+      const successed = true
       const method = 'POST'
       const body = Object.keys(sendObj).map((key)=>key+"="+encodeURIComponent(sendObj[key])).join("&")
       console.log(body,sendObj)
@@ -52,9 +58,12 @@ export default {
       fetch('/api/login', { method, headers, body }).then((res) => res.json()).then (res => {
         console.log(res.status)
         if (res.status === 'ok') {
-          // console.log('ログインできたぞおおおおおおおお')
+          this.token = res.token
+          localStorage.setItem('token',this.token)
+          console.log(this.token)
+          this.$router.push('home')
         } else {
-          // console.log('ログイン出来なかった(´・ω・｀)')
+          this.isFailedLogin = true
         }
       })
       return false

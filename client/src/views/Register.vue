@@ -20,6 +20,9 @@
             <div v-if="nameStatus === 'empty'">
               せめてなんか書けよ！！！！！！
             </div>
+            <div v-if="nameStatus === 'conflicted'">
+              名前被ってますよ
+            </div>
           </div>
         </div>
       </div>
@@ -123,9 +126,13 @@ export default {
         console.log(res)
         if (res.status === 'ok') {
           this.hasRegistered = true
+          this.$router.push('login')
         } else {
           // passwordとnameがオーバーしてる時のエラー
           this.errs[res.err] = true
+          if (res.err === 'nameConflictedErr') {
+            this.canRegisterName = false
+          }
         }
       })
     }
@@ -136,7 +143,7 @@ export default {
     },
     nameStatus () {
       if (this.isNameValPending) return 'pending'
-      if (!this.canRegisterName) return 'duplicated'
+      if (!this.canRegisterName) return 'conflicted'
       if (this.isNameOk) return 'ok'
       if (this.name.length === 0) return 'empty'
       if (this.name.length > 10) return 'invalidLen'
