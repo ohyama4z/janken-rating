@@ -10,7 +10,7 @@ const connection = mysql.createConnection({
 })
 
 router.post('/', (req, res) => {
-  const roomId = Math.floor(Math.random()*10000)
+  const roomId = Math.floor(Math.random() * 10000)
   connection.query('SELECT `id` FROM `session` WHERE `token`=?', [req.body.token], (err, result) => {
     if (err) {
       res.status(500).json({ status: 'ng', err: 'resErr' })
@@ -25,20 +25,27 @@ router.post('/', (req, res) => {
         res.status(500).json({ status: 'ng', err: 'resErr' })
         return
       }
-      res.status(201).json({ id: roomId, status: 'ok' })
+      res.status(200).json({ id: roomId, status: 'ok' })
+      connection.query('INSERT INTO `room_players` (`room_id`, `leader`, `player_id`) VALUES (?, `1`, ?)', [roomId, result[0].id], (err, aho) => {
+        if (err) {
+          res.status(500).json({ status: 'ng', err: 'resErr' })
+          return
+        }
+        res.status(200).json({ status: 'ok' })
+      })
     })
   })
 })
 
-router.get('/:roomId/wating', (req,res) => {
+router.get('/:roomId/wating', (req, res) => {
   // SELECT * FROM players, room_players WHERE players.id=room_players.player_id AND room_players.room_id=4902
-  connection.query('SELECT * FROM `players`,`room_players` WHERE `players.id`=`room_players.player_id` AND `room_players.room_id`=?', [req.body.roomId], (err, waitingres) =>{
+  connection.query('SELECT * FROM `players`,`room_players` WHERE `players.id`=`room_players.player_id` AND `room_players.room_id`=?', [req.body.roomId], (err, waitingres) => {
     if (err) {
       res.status(500).json({ status: 'ng', err: 'resErr' })
       return
     }
     const playersData = []
-    waitingres.foreach((row)=>{
+    waitingres.foreach((row) => {
       playersData.push({
         player_id: row.player_id,
         player_name: row.name,
@@ -46,7 +53,7 @@ router.get('/:roomId/wating', (req,res) => {
         player_comment: row.comment
       })
     })
-    res.status(200).json({players: playersData})
+    res.status(200).json({ players: playersData })
   })
 })
 

@@ -29,6 +29,7 @@
       fetch(`/api/rooms/${this.roomId}/waiting`, { method, headers, body }).then((res) => res.json()).then (res => {
         if (res.status === 'ok') {
           this.players = res.players
+          socket
         } else {
           this.isFailedLogin = true
         }
