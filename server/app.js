@@ -1,13 +1,16 @@
+
 const express = require('express')
 // const multer = require('multer')
 const path = require('path')
 const cookieParser = require('cookie-parser')
 const logger = require('morgan')
-
+const app = express()
+const http = require('http').Server(app)
+const io = require('socket.io')(http)
 const registerRouter = require('./routes/register')
 const loginRouter = require('./routes/login')
-
-const app = express()
+require('./socket/socket')(io)
+require('./socket/notif').listen(io)
 
 app.use(logger('dev'))
 app.use(express.json())

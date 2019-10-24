@@ -18,7 +18,8 @@
         // サーバにアクセスして、情報を取ってくる
       this.roomId = this.$route.params.roomId
       const sendObj = {
-        roomId: this.roomId
+        roomId: this.roomId,
+        token: localStorage.getItem('token')
       }
       const method = 'POST'
       const body = Object.keys(sendObj).map((key)=>key+"="+encodeURIComponent(sendObj[key])).join("&")
@@ -27,12 +28,12 @@
         'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
       }
       fetch(`/api/rooms/${this.roomId}/waiting`, { method, headers, body }).then((res) => res.json()).then (res => {
-        if (res.status === 'ok') {
-          this.players = res.players
-          socket
-        } else {
-          this.isFailedLogin = true
+        if (res.status !== 'ok') {
+          return
         }
+        this.players = res.players
+         this.$socket.emit('watchRoom',JSON.stringify(sendObj))
+        return
       })
       return false
     },

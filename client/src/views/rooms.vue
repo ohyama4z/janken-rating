@@ -9,12 +9,13 @@
       </button>
     </div>
     <div class="uk-width-1-2 uk-margin-auto uk-margin-medium">
-      <router-link to="/rooms/ready">
+       <input class="uk-input uk-form-width-medium uk-form-large" type="text" v-model="roomId">
+      <button v-on:click="joinRoom()">
         <vk-card type="primary">
           <vk-card-title>入室</vk-card-title>
           <p>ルームIDを入力して既存の部屋に入ります</p>
         </vk-card>
-      </router-link>
+      </button>
     </div>
     <div v-if="isFaledCreated">部屋の作成に失敗しました、時間を置いて再度お試しください</div>
   </div>
@@ -23,6 +24,11 @@
 <script>
   export default {
     name: 'rooms',
+    data () {
+      return{
+        roomId: null
+      }
+    },
     methods: {
       createRoom () {
         const sendObj = {
@@ -36,12 +42,27 @@
         }
         fetch('/api/rooms', { method, headers, body }).then((res) => res.json()).then (res => {
           if (res.status === 'ok') {
-            this.$router.push('waiting')
+            this.$router.push(`/rooms/${res.roomId}/waiting`)
           } else {
             this.isFailedCreated = true
           }
         })
         return false
+      }
+      joinRoom () {
+        const sendObj = {
+          token: localStorage.getItem('token'),
+          roomId: this.roomId
+        }
+        const method = 'POST'
+        const body = Object.keys(sendObj).map((key)=>key+"="+encodeURIComponent(sendObj[key])).join("&")
+        const headers = {
+          'Accept': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
+        }
+        fetch(`/api/rooms/${roomId}/join`, { method, headers, body }).then((res) => res.json()).then (res => {
+
+        }
       }
     }
   }
