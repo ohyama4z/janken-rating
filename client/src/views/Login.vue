@@ -11,7 +11,7 @@
       <div class="uk-margin"> 
         <label class="uk-form-label" for="form-horizontal-text">パスワード🔐</label>
         <div class="uk-form-controls">
-        <input class="uk-input uk-form-width-medium uk-form-large" type="text" v-model="password">
+        <input class="uk-input uk-form-width-medium uk-form-large" type="password" v-model="password">
         </div>
       </div>
       <div v-if="isFailedLogin">
@@ -55,17 +55,26 @@ export default {
         'Accept': 'application/json',
         'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
       }
-      fetch('/api/login', { method, headers, body }).then((res) => res.json()).then (res => {
+      fetch('/api/login', { method, headers, body }).then(res => res.json()).then(res => {
         console.log(res.status)
         if (res.status === 'ok') {
-          this.token = res.token
-          localStorage.setItem('token',this.token)
+          this.token = res.token,
+          localStorage.setItem('token', this.token)
           console.log(this.token)
           this.$router.push('home')
         } else {
           this.isFailedLogin = true
         }
       })
+      // }).then(() => {
+      //   return fetch(sfdaslfjldfjskwg)
+      // }).then(res => {
+      //   syori
+        
+      // }).catch(e => {
+      //   console.log(e)
+      //   this.isFailedLogin = true
+      // })
       return false
     }
   }

@@ -17,17 +17,18 @@
     mounted () { // ページが読み込まれた時
         // サーバにアクセスして、情報を取ってくる
       this.roomId = this.$route.params.roomId
-      const sendObj = {
-        roomId: this.roomId,
-        token: localStorage.getItem('token')
-      }
-      const method = 'POST'
-      const body = Object.keys(sendObj).map((key)=>key+"="+encodeURIComponent(sendObj[key])).join("&")
+      // const sendObj = {
+      //   roomId: this.roomId,
+      //   token: localStorage.getItem('token')
+      // }
+      const method = 'GET'
+      // const body = Object.keys().map((key)=>key+"="+encodeURIComponent()).join("&")
       const headers = {
         'Accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
+        'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+        'Authorization': localStorage.getItem('token')
       }
-      fetch(`/api/rooms/${this.roomId}/waiting`, { method, headers, body }).then((res) => res.json()).then (res => {
+      fetch(`/api/rooms/${this.roomId}/waiting`, { method, headers }).then((res) => res.json()).then (res => {
         if (res.status !== 'ok') {
           return
         }

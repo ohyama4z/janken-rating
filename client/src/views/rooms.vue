@@ -17,7 +17,7 @@
         </vk-card>
       </button>
     </div>
-    <div v-if="isFaledCreated">部屋の作成に失敗しました、時間を置いて再度お試しください</div>
+    <div v-if="isFailedCreated">部屋の作成に失敗しました、時間を置いて再度お試しください</div>
   </div>
 </template>
 
@@ -26,7 +26,8 @@
     name: 'rooms',
     data () {
       return{
-        roomId: null
+        roomId: null,
+        isFailedCreated: false
       }
     },
     methods: {
@@ -42,7 +43,7 @@
         }
         fetch('/api/rooms', { method, headers, body }).then((res) => res.json()).then (res => {
           if (res.status === 'ok') {
-            this.$router.push(`/rooms/${res.roomId}/waiting`)
+            this.$router.push(`/rooms/${res.id}/waiting`)
           } else {
             this.isFailedCreated = true
           }
