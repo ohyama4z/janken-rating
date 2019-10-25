@@ -4,9 +4,9 @@ const mysql = require('mysql')
 const bcrypt = require('bcrypt')
 // const saltRounds = 10
 const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'pu-sannoho-muranda-bi-',
+  host: 'mysql',
+  user: 'janken',
+  password: 'rating',
   database: 'janken_rating'
 })
 

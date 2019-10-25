@@ -3,12 +3,12 @@ const router = express.Router()
 const mysql = require('mysql')
 // const saltRounds = 10
 const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'pu-sannoho-muranda-bi-',
+  host: 'mysql',
+  user: 'janken',
+  password: 'rating',
   database: 'janken_rating'
 })
-const notif = require('./socket/notif').notif
+const notif = require('../socket/notif').notif
 
 router.post('/', (req, res) => {
   const roomId = Math.floor(Math.random() * 10000)
@@ -88,18 +88,18 @@ router.post('/:roomId/join', (req, res) => {
           return
         }
         const players = []
-        ahos.foreach( aho => {
+        ahos.foreach(aho => {
           players.push({
-            leader: (aho.leader === 0) ? false: true,
+            leader: aho.leader === 1,
             name: aho.name,
             id: aho.id,
             rating: aho.rating,
             comment: aho.comment
           })
         })
+        notif.joined(req.body.roomId, players)
+        res.status(201).json({ status: 'ok' })
       })
-      notif.joined(req.body.roomId, players)
-      res.status(201).json({ status: 'ok' })
     })
   })
 })

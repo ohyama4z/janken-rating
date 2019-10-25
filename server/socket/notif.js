@@ -1,9 +1,9 @@
-const io
+let io
 module.exports.listen = socketIo => {
   io = socketIo
 }
 module.exports.notif = {
-    joined (roomId, playerData) {
-      io.to(roomId).emit('playerData', JSON.stringify(playerData))
-    }
+  joined (roomId, playerData) {
+    io.to(roomId).emit('playerData', JSON.stringify(playerData))
+  }
 }

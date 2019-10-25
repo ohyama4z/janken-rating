@@ -4,7 +4,7 @@ import Register from './views/Register.vue'
 import Login from './views/Login'
 import Home from './views/Home'
 import rooms from './views/rooms'
-import Waiting from './views/rooms/wating'
+import Waiting from './views/room/Waiting'
 // import Ready from './views/rooms/Ready'
 
 Vue.use(Router)
@@ -35,13 +35,10 @@ export default new Router({
     },
     {
       path: '/rooms/:roomId/waiting',
-      component: waiting
+      name: 'waiting',
+      component: Waiting
     }
   ]
 })
-
-
-
 // localhost:8080/rooms/:id/play
 // localhost:8080/rooms/:id/wait
-

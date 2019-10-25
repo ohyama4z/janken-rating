@@ -48,7 +48,7 @@
           }
         })
         return false
-      }
+      },
       joinRoom () {
         const sendObj = {
           token: localStorage.getItem('token'),
@@ -61,8 +61,7 @@
           'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
         }
         fetch(`/api/rooms/${roomId}/join`, { method, headers, body }).then((res) => res.json()).then (res => {
-
-        }
+        })
       }
     }
   }

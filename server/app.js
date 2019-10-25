@@ -9,6 +9,8 @@ const http = require('http').Server(app)
 const io = require('socket.io')(http)
 const registerRouter = require('./routes/register')
 const loginRouter = require('./routes/login')
+const roomsRouter = require('./routes/rooms')
+const waitingRouter = require('./routes/wating')
 require('./socket/socket')(io)
 require('./socket/notif').listen(io)
 
@@ -21,5 +23,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/api/register', registerRouter)
 app.use('/api/login', loginRouter)
+app.use('/api/rooms', roomsRouter)
+app.use('/api/wating', waitingRouter)
 app.listen(3000)
 module.exports = app
