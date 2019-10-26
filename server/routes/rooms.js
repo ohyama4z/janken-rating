@@ -123,7 +123,7 @@ router.post('/:roomId/join', (req, res) => {
   //   leader: False,
   //   name: '',
   //   id: null,
-  //   rating: null,
+  //   rating: null,AG
   //   comment: ''
   // }
   connection.query('SELECT `id` FROM `session` WHERE `token`=?', [req.body.token], (err, result) => {
@@ -135,18 +135,18 @@ router.post('/:roomId/join', (req, res) => {
       res.status(400).json({ status: 'ng', err: 'tokenErr' })
       return
     }
-    connection.query('INSERT INTO `room_players` (`room_id`, `leader`, `player_id`) VALUES (?, 0, ?)', [req.body.roomId, result[0].id], (err, res) => {
+    connection.query('INSERT INTO `room_players` (`room_id`, `leader`, `player_id`) VALUES (?, 0, ?)', [req.body.roomId, result[0].id], (err, bobo) => {
       if (err) {
-        res.status(500).json({ status: 'ng', err: 'databaseErr' })
+        res.status(500).json({ status: 'ng', err: 'databaseErr1' })
         return
       }
-      connection.query('SELECT * FROM `players`,`room_players` WHERE `players.id`=`room_players.player_id` AND `room_players.room_id`=?', [req.body.roomId], (err, ahos) => {
+      connection.query('SELECT * FROM `players`,`room_players` WHERE players.id=room_players.player_id AND room_players.room_id=?', [req.body.roomId], (err, ahos) => {
         if (err) {
-          res.status(500).json({ status: 'ng', err: 'databaseErr' })
+          res.status(500).json({ status: 'ng', err: 'databaseErr2' })
           return
         }
         const players = []
-        ahos.foreach(aho => {
+        ahos.forEach(aho => {
           players.push({
             leader: aho.leader === 1,
             name: aho.name,

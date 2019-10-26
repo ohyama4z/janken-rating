@@ -1,21 +1,17 @@
 <template>
   <div>
     <div class="uk-width-1-2 uk-margin-auto uk-margin-medium">
-      <button v-on:click="createRoom()">
-        <vk-card type="primary">
-          <vk-card-title>対戦ルーム作成</vk-card-title>
-          <p>新しく対戦部屋を作ります</p>
-        </vk-card>
-      </button>
+      <vk-card v-on:click="createRoom()" type="primary">
+        <vk-card-title>対戦ルーム作成</vk-card-title>
+        <p>新しく対戦部屋を作ります</p>
+      </vk-card>
     </div>
     <div class="uk-width-1-2 uk-margin-auto uk-margin-medium">
-       <input class="uk-input uk-form-width-medium uk-form-large" type="text" v-model="roomId">
-      <button v-on:click="joinRoom()">
-        <vk-card type="primary">
-          <vk-card-title>入室</vk-card-title>
-          <p>ルームIDを入力して既存の部屋に入ります</p>
-        </vk-card>
-      </button>
+      <vk-card v-on:click="joinRoom()" type="primary">
+        <vk-card-title>入室</vk-card-title>
+        <p>ルームIDを入力</p>
+        <input class="uk-input uk-form-width-medium uk-form-large" type="number" v-model="roomId" placeholder="1234">
+      </vk-card>
     </div>
     <div v-if="isFailedCreated">部屋の作成に失敗しました、時間を置いて再度お試しください</div>
   </div>
@@ -61,7 +57,14 @@
           'Accept': 'application/json',
           'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
         }
-        fetch(`/api/rooms/${roomId}/join`, { method, headers, body }).then((res) => res.json()).then (res => {
+        fetch(`/api/rooms/${sendObj.roomId}/join`, { method, headers, body }).then((res) => res.json()).then (res => {
+          if (res.status === 'ok') {
+            this.$router.push(`/rooms/${sendObj.roomId}/waiting`)
+          } else {
+            console.log('ばか')
+          }
+        }).catch(err => {
+          console.log('あほ')
         })
       }
     }

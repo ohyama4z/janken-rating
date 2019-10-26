@@ -1,7 +1,19 @@
 <template>
-  <table>
-    
-  </table>
+  <div>
+    <div>room id : {{ roomId }}</div>
+    <div 
+      class="uk-width-1-2 uk-margin-auto uk-margin-medium"
+      v-for="i in players"
+      v-bind:key="i"
+    >
+      <vk-card type="secondry">
+        <div v-if="i.leader">room leader🚩</div>
+        <vk-card-title>{{ i.name }}</vk-card-title>
+        <p>rating : {{ i.rating }}</p>
+        <p>{{ i.comment }}</p>
+      </vk-card>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -32,7 +44,8 @@
         if (res.status !== 'ok') {
           return
         }
-        this.players = res.players
+        // this.players = res.players
+          this.$set(this.datas, 'players', res.players)
          this.$socket.emit('watchRoom',JSON.stringify(sendObj))
         return
       })

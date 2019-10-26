@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.8.5
+-- version 4.9.1
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: 2019 年 10 月 22 日 06:54
--- サーバのバージョン： 8.0.15
--- PHP Version: 7.3.3
+-- ホスト: mysql
+-- 生成日時: 2019 年 10 月 26 日 12:41
+-- サーバのバージョン： 8.0.18
+-- PHP のバージョン: 7.2.23
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -19,7 +19,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `janken_rating`
+-- データベース: `janken_rating`
 --
 
 -- --------------------------------------------------------
@@ -43,11 +43,11 @@ CREATE TABLE `history` (
 
 CREATE TABLE `players` (
   `id` int(11) NOT NULL,
-  `name` varchar(10) COLLATE utf8mb4_general_ci NOT NULL,
-  `password` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `name` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `password` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `rating` int(11) NOT NULL DEFAULT '1500',
-  `icon` varchar(1000) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `comment` varchar(1000) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'よろしくお願いします'
+  `icon` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `comment` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'よろしくお願いします'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -64,40 +64,54 @@ CREATE TABLE `rooms` (
 -- --------------------------------------------------------
 
 --
+-- テーブルの構造 `room_players`
+--
+
+CREATE TABLE `room_players` (
+  `room_id` int(100) NOT NULL,
+  `leader` tinyint(1) NOT NULL,
+  `player_id` int(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- テーブルの構造 `session`
 --
 
 CREATE TABLE `session` (
   `id` int(11) NOT NULL,
-  `token` varchar(100) COLLATE utf8mb4_general_ci NOT NULL
+  `token` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE `room_players` (
-  `room_id` INT(100) NOT NULL ,
-  `leader` BOOLEAN NOT NULL ,
-  `player_id` INT(100) NOT NULL
-) ENGINE = InnoDB;
--- Indexes for dumped tables
+--
+-- ダンプしたテーブルのインデックス
 --
 
 --
--- Indexes for table `players`
+-- テーブルのインデックス `players`
 --
 ALTER TABLE `players`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `rooms`
+-- テーブルのインデックス `rooms`
 --
 ALTER TABLE `rooms`
   ADD PRIMARY KEY (`id`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- テーブルのインデックス `room_players`
+--
+ALTER TABLE `room_players`
+  ADD PRIMARY KEY (`room_id`,`player_id`);
+
+--
+-- ダンプしたテーブルのAUTO_INCREMENT
 --
 
 --
--- AUTO_INCREMENT for table `players`
+-- テーブルのAUTO_INCREMENT `players`
 --
 ALTER TABLE `players`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
