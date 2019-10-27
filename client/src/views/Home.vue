@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div>じゃんけんレーティング</div>
+    <h1 class="uk-text-center@s uk-text-primary">じゃんけんレーティング</h1>
     <div class="uk-width-1-2 uk-margin-auto uk-margin-medium">
       <router-link to="/rooms">
         <vk-card type="primary">

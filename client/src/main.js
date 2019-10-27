@@ -12,6 +12,13 @@ Vue.use(new VueSocketIO({
 
 // 超重要!!!!!
 import '@vuikit/theme'
+import { IconUser } from '@vuikit/icons'
+
+// register globally
+Vue.component('VkIconsUser', IconUser)
+// Vue.component('VkIconsClose', IconClose)
+
+
 
 Vue.use(Vuikit)
 

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="uk-form-horizontal login-form">
     <form v-if="!hasRegistered" class="uk-form-stacked uk-margin-large">
     <!-- <div v-if="!hasRegistered"> -->
       <div class="uk-margin">
