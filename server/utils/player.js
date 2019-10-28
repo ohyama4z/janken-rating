@@ -2,8 +2,7 @@ const mysql2 = require('mysql2/promise')
 const dest = require('./common').databaseDest
 const bcrypt = require('bcrypt')
 const saltRounds = 10
-
-
+const notif = require('../socket/notif').notif
 
 class Player {
   constructor () {
@@ -89,23 +88,25 @@ class Player {
         conn,
         conn.query('SELECT `password`,`id` FROM `players` WHERE `name`=?', [name])
       ])
-    }).then(([conn, res]) => {
+    }).then(([conn, [res]]) => {
       if (res.length === 0) {
         return Promise.reject(new Error('unexpectedPas'))
       }
       console.log(plainPass, res)
       return Promise.all([
         conn,
+        res[0].id,
         bcrypt.compare(plainPass, res[0].password)
       ])
-    }).then(([conn, res]) => {
+    }).then(([conn, id, res]) => {
+      console.log(res)
       if (!res) {
         return Promise.reject(new Error('wrongPass'))
       }
       const token = Math.random().toString(32).substring(2)
       return Promise.all([
         token,
-        conn.query('INSERT INTO `session` (`id`, `token`) VALUES (?, ?)', [res[0].id, token])
+        conn.query('INSERT INTO `session` (`id`, `token`) VALUES (?, ?)', [id, token])
       ])
     }).then(([token]) => {
       return token
@@ -117,8 +118,10 @@ class Player {
     return this.checkAuth().then(() => {
       return mysql2.createConnection(dest)
     }).then(conn => {
+      // console.log(self.id)
+      console.log('122', roomId)
       return conn.query('INSERT INTO `room_players` (`room_id`, `leader`, `player_id`) VALUES (?, 0, ?)', [roomId, self.id])
-    }).then(res => {
+    }).then(() => {
       return this.getRoomStatus(roomId)
     }).then(res => {
       return notif.joined(roomId, res)

@@ -13,7 +13,7 @@
         <input class="uk-input uk-form-width-medium uk-form-large" type="number" v-model="roomId" placeholder="1234">
       </vk-card>
     </div>
-    <div v-if="isFailedCreated">部屋の作成に失敗しました、時間を置いて再度お試しください</div>
+    <div v-if="isFailedCreated" class="uk-text-center@s">部屋の作成に失敗しました、時間を置いて再度お試しください</div>
   </div>
 </template>
 

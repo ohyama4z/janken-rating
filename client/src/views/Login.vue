@@ -14,7 +14,7 @@
         <input class="uk-input uk-form-width-medium uk-form-large" type="password" v-model="password">
         </div>
       </div>
-      <div v-if="isFailedLogin">
+      <div v-if="isFailedLogin" class="uk-text-center@s">
         ログインに失敗しました
       </div>
       <button v-on:click="login()" class="uk-button uk-button-primary">ログイン</button>

@@ -57,7 +57,7 @@
         >
           アカウント登録
         </vk-button>
-        <div v-if="errs.internalServerErr">
+        <div v-if="errs.internalServerErr" class="uk-text-center@s">
           サーバーの処理が失敗しました。
           後ほどお試しください。
         </div>

@@ -5,6 +5,7 @@
       type="primary"
       v-on:click="startGame()"
       v-bind:disabled="players.length>1"
+      class="uk-align-center"
     >ゲーム開始</vk-button>
     <div 
       class="uk-width-1-2 uk-margin-auto uk-margin-medium"
@@ -12,7 +13,7 @@
       v-bind:key="player.id"
     >
 
-      <vk-card class="uk-width-1-2@m">
+      <vk-card class="uk-width-1-2@m uk-align-center">
         <div slot="header">
           <vk-grid gutter="small" class="uk-flex-middle">
             <div class="uk-width-auto">

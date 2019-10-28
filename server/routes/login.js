@@ -19,7 +19,7 @@ router.post('/', (req, res) => {
     res.status(200).json({ status: 'ok', token })
   }).catch(err => {
     console.log(err)
-    if (err === 'unexpectedPas' && err === 'wrongPass') {
+    if (err === 'unexpectedPas' || err === 'wrongPass') {
       res.status(401).json({ status: 'ng', err })
       return
     }
