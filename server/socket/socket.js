@@ -32,5 +32,10 @@ module.exports = (io) => {
         console.log(err)
       })
     })
+    socket.on('startGame', (json) => {
+      mysql2.createConnection(dest).then(conn => {
+        return conn.query('')
+      })
+    })
   })
 }

@@ -88,7 +88,13 @@
       }
     },
     methods: {
-      
+      startGame () {
+        sendObj = {
+          roomId: this.roomId,
+          players: this.players
+        }
+        this.$socket.emit('startGame',JSON.stringify(sendObj))
+      }
     }
   }
 </script>
