@@ -1,5 +1,5 @@
 const mysql2 = require('mysql2/promise')
-// const saltRounds = 10
+const Player = require('../utils/player')
 const dest = {
   host: 'mysql',
   user: 'janken',
@@ -30,11 +30,6 @@ module.exports = (io) => {
         // res.status(200).json({ status: 'ok' })
       }).catch(err => {
         console.log(err)
-      })
-    })
-    socket.on('startGame', (json) => {
-      mysql2.createConnection(dest).then(conn => {
-        return conn.query('')
       })
     })
   })

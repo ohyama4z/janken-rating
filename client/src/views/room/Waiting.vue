@@ -91,7 +91,8 @@
       startGame () {
         sendObj = {
           roomId: this.roomId,
-          players: this.players
+          players: this.players,
+          token: localStorage.getItem('token')
         }
         this.$socket.emit('startGame',JSON.stringify(sendObj))
       }

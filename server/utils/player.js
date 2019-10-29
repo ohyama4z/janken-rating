@@ -146,6 +146,16 @@ class Player {
       return players
     })
   }
+
+  startGame (data) {
+    const self = this
+    const player = new Player
+    return this.checkAuth().then(() => {
+      return mysql2.createConnection(dest)
+    }).then(conn => {
+      conn.query('')
+    })
+  }
 }
 
 module.exports = Player
