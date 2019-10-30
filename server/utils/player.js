@@ -151,9 +151,12 @@ class Player {
     const self = this
     const player = new Player
     return this.checkAuth().then(() => {
+      if (data.players.length < 2) {
+        return Promise.reject(new Error('playersNumErr'))
+      }
       return mysql2.createConnection(dest)
     }).then(conn => {
-      conn.query('')
+      return conn.query('SELECT * FROM `room_players` WHERE ')
     })
   }
 }

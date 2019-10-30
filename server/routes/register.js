@@ -21,9 +21,9 @@ router.post('/', (req, res, next) => {
   }).catch(err => {
     console.log(err)
     if (
-      err.status === 'nameLenErr'
-      || err.status ==='passLenErr'
-      || err.status === 'nameConflictedErr'
+      err.status === 'nameLenErr' ||
+      err.status === 'passLenErr' ||
+      err.status === 'nameConflictedErr'
     ) {
       res.status(400).json({ status: 'ng', err })
       return
