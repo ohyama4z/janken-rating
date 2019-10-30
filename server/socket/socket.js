@@ -32,5 +32,14 @@ module.exports = (io) => {
         console.log(err)
       })
     })
+    socket.on('startGame', (data) => {
+      const player = new Player
+      player.authorize(data.token).then(() => {
+        return player.startGame(data)
+      }).catch(err => {
+        console.log(err)
+        
+      })
+    })
   })
 }

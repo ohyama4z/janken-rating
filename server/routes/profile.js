@@ -1,18 +1,11 @@
 const express = require('express')
-const multer  = require('multer')
 const router = express.Router()
-const mysql = require('mysql')
-const bcrypt = require('bcrypt')
-// const saltRounds = 10
-const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'pu-sannoho-muranda-bi-',
-  database: 'janken_rating'
-})
+const Player = require('../utils/player')
 
 router.get('/', (req, res) => {
-
+  const token = req.token
+  const player = new Player
+  player.getProfile(token)
 })
 
 // コメント

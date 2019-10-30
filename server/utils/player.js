@@ -113,6 +113,61 @@ class Player {
     })
   }
 
+  getProfile (token) {
+    return this.authorize(token).then(() => {
+      return this.checkAuth()
+    }).then(() => {
+      return mysql2.createConnection(dest)
+    }).then(conn => {
+      return Promise.all([
+        conn,
+        conn.query('SELECT `id` FROM `session` WHERE `token`=?',[token])
+      ])
+    }).then(([conn, res]) => {
+      return conn.query('SELECT * FROM `players` WHERE `id`=?',[res[0].id])
+    }).then(([res]) => {
+      const playerData = {
+        id: res.id,
+        name: res.name,
+        rate: res.rating,
+        comment: res.comment,
+        icon: res.icon
+      }
+      return playerData
+    })
+  }
+
+  editProfile (token, editData) {
+    const editOne = {
+      class: '',
+      data: ''
+    }
+    if (editData.comment) {
+      editOne.class = 'comment'
+      editOne.data = editData
+    } else if (editData.icon) {
+      editOne.class = 'icon'
+      editOne.data = editData
+    } else {
+      return Promise.reject(new Error('notexistEditData'))
+    }
+    return checkAuth().then(() => {
+      return mysql2,createConnection(dest)
+    }).then(conn => {
+      return Promise.all([
+        conn.query('SELECT `id` FROM `session` WHERE `token`=?', [token]),
+        conn
+      ])
+    }).then(([res, conn]) => {
+      if (editOne.class === 'comment') {
+        return conn.query('UPDATE `players` SET `comment`=? WHERE `id` = ?', [editOne.data, res[0].id])
+      }
+      if (editOne.class === 'icon') {
+        return conn.query('UPDATE `players` SET `icon`=? WHERE `id` = ?', [editOne.data, res[0].id])
+      }
+    })
+  }
+
   joinRoom (roomId) {
     const self = this
     return this.checkAuth().then(() => {
@@ -148,15 +203,12 @@ class Player {
   }
 
   startGame (data) {
-    const self = this
-    const player = new Player
     return this.checkAuth().then(() => {
       if (data.players.length < 2) {
         return Promise.reject(new Error('playersNumErr'))
       }
-      return mysql2.createConnection(dest)
-    }).then(conn => {
-      return conn.query('SELECT * FROM `room_players` WHERE ')
+      this.$router.push(`/rooms/${data.roomId}/janken`)
+      return Promise.resolve
     })
   }
 }

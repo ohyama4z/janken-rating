@@ -13,7 +13,6 @@ const dest = {
 }
 
 router.post('/', (req, res) => {
-  
   const player = new Player()
   player.authorize(req.body.token).then(() => {
     return player.createRoom()
