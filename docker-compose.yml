@@ -1,6 +1,18 @@
 version: '3.3'
 
 services:
+
+  minio:
+    image: minio/minio
+    volumes:
+      - ./minio/data:/data
+    command: server /data
+    ports:
+      - 9000:9000
+    environment:
+      - MINIO_ACCESS_KEY=janken_raiting
+      - MINIO_SECRET_KEY=password
+
   mysql:
     image: mysql:8.0
     volumes:

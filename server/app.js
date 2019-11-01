@@ -1,4 +1,11 @@
-
+const AWS = require('aws-sdk')
+const s3  = new AWS.S3({
+    accessKeyId: 'YOUR-ACCESSKEYID' ,
+    secretAccessKey: 'YOUR-SECRETACCESSKEY' ,
+    endpoint: 'http://127.0.0.1:9000' ,
+    s3ForcePathStyle: true, // needed with minio?
+    signatureVersion: 'v4'
+})
 const express = require('express')
 // const multer = require('multer')
 const path = require('path')

@@ -34,9 +34,9 @@ export default {
     return {
       player: [],
       token: localStorage.getItem(token),
-      editedData: {
-        comment: '',
-        icon: ''
+      editData: {
+        comment: null,
+        icon: null
       }
     }
   },
@@ -51,13 +51,29 @@ export default {
     const body = Object.keys(sendObj).map((key)=>key+"="+encodeURIComponent(sendObj[key])).join("&")
     const headers = { 
       'Accept': 'application/json',
-      'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8' }
+      'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+      'Authorization': this.token
+      }
     fetch('/api/profile', { method, headers, body }).then((res) => res.json()).then (res => {
 
     })
   },
   methods: {
-    
+    upload () {
+      const sendObj = {
+      editData: this.editData
+    }
+    const method = 'POST'
+    const body = Object.keys(sendObj).map((key)=>key+"="+encodeURIComponent(sendObj[key])).join("&")
+    const headers = { 
+      'Accept': 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+      'Authorization': this.token
+      }
+    fetch('/api/profile', { method, headers, body }).then((res) => res.json()).then (res => {
+
+    })
+    }
   }
 }
 </script>

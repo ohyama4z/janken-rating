@@ -142,14 +142,14 @@ class Player {
       class: '',
       data: ''
     }
-    if (editData.comment) {
+    if (editData.comment != null) {
       editOne.class = 'comment'
       editOne.data = editData
-    } else if (editData.icon) {
+    } else if (editData.icon != null) {
       editOne.class = 'icon'
       editOne.data = editData
     } else {
-      return Promise.reject(new Error('notexistEditData'))
+      return Promise.reject(new Error('notExistEditData'))
     }
     return checkAuth().then(() => {
       return mysql2,createConnection(dest)
@@ -160,11 +160,12 @@ class Player {
       ])
     }).then(([res, conn]) => {
       if (editOne.class === 'comment') {
-        return conn.query('UPDATE `players` SET `comment`=? WHERE `id` = ?', [editOne.data, res[0].id])
+        conn.query('UPDATE `players` SET `comment`=? WHERE `id` = ?', [editOne.data, res[0].id])
       }
       if (editOne.class === 'icon') {
-        return conn.query('UPDATE `players` SET `icon`=? WHERE `id` = ?', [editOne.data, res[0].id])
+        conn.query('UPDATE `players` SET `icon`=? WHERE `id` = ?', [editOne.data, res[0].id])
       }
+      return true
     })
   }
 
