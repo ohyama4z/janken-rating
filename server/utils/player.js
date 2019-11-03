@@ -3,6 +3,15 @@ const dest = require('./common').databaseDest
 const bcrypt = require('bcrypt')
 const saltRounds = 10
 const notif = require('../socket/notif').notif
+const filetype = require('file-type')
+const aws = require('aws-sdk')
+const s3 = new aws.S3({
+  accessKeyId: 'janken-rating' ,
+  secretAccessKey: 'password' ,
+  endpoint: 'http://minio:9000' ,
+  s3ForcePathStyle: true, // needed with minio?
+  signatureVersion: 'v4'
+})
 
 class Player {
   constructor () {
@@ -18,8 +27,8 @@ class Player {
         return Promise.reject(new Error('invalidToken'))
       }
       self.id = res[0].id
-      console.log(res)
-      // console.log(res[0].id)
+      //console.log(res)
+      // //console.log(res[0].id)
     })
   }
 
@@ -92,14 +101,14 @@ class Player {
       if (res.length === 0) {
         return Promise.reject(new Error('unexpectedPas'))
       }
-      console.log(plainPass, res)
+      //console.log(plainPass, res)
       return Promise.all([
         conn,
         res[0].id,
         bcrypt.compare(plainPass, res[0].password)
       ])
     }).then(([conn, id, res]) => {
-      console.log(res)
+      //console.log(res)
       if (!res) {
         return Promise.reject(new Error('wrongPass'))
       }
@@ -113,59 +122,69 @@ class Player {
     })
   }
 
-  getProfile (token) {
-    return this.authorize(token).then(() => {
-      return this.checkAuth()
-    }).then(() => {
+  getProfile (id) {
+    return this.checkAuth().then(() => {
       return mysql2.createConnection(dest)
     }).then(conn => {
-      return Promise.all([
-        conn,
-        conn.query('SELECT `id` FROM `session` WHERE `token`=?',[token])
-      ])
-    }).then(([conn, res]) => {
-      return conn.query('SELECT * FROM `players` WHERE `id`=?',[res[0].id])
+      return conn.query('SELECT * FROM `players` WHERE `id`=?',[id])
     }).then(([res]) => {
+      //console.log(res)
       const playerData = {
-        id: res.id,
-        name: res.name,
-        rate: res.rating,
-        comment: res.comment,
-        icon: res.icon
+        id: res[0].id,
+        name: res[0].name,
+        rate: res[0].rating,
+        comment: res[0].comment,
+        icon: res[0].icon != null ? `http://localhost:9000/janken-rating/icons/${res[0].icon}` : null
       }
       return playerData
     })
   }
 
-  editProfile (token, editData) {
-    const editOne = {
-      class: '',
-      data: ''
-    }
-    if (editData.comment != null) {
-      editOne.class = 'comment'
-      editOne.data = editData
-    } else if (editData.icon != null) {
-      editOne.class = 'icon'
-      editOne.data = editData
-    } else {
-      return Promise.reject(new Error('notExistEditData'))
-    }
-    return checkAuth().then(() => {
-      return mysql2,createConnection(dest)
+  editProfile (editData) {
+    const self = this
+    return this.checkAuth().then(() => {
+      // console.log(JSON.stringify(editData))
+      if (editData == null || (editData.comment == null && editData.icon == null)) {
+        return Promise.reject(new Error('notexitEditData'))
+      }
+      return mysql2.createConnection(dest)
     }).then(conn => {
-      return Promise.all([
-        conn.query('SELECT `id` FROM `session` WHERE `token`=?', [token]),
-        conn
-      ])
-    }).then(([res, conn]) => {
-      if (editOne.class === 'comment') {
-        conn.query('UPDATE `players` SET `comment`=? WHERE `id` = ?', [editOne.data, res[0].id])
+      if (editData.comment != null) {
+        return Promise.all([
+          conn,
+          conn.query('UPDATE `players` SET `comment`=? WHERE `id` = ?', [editData.comment, self.id])
+        ])
       }
-      if (editOne.class === 'icon') {
-        conn.query('UPDATE `players` SET `icon`=? WHERE `id` = ?', [editOne.data, res[0].id])
+      return [conn]
+    }).then(([conn]) => {
+      if (editData.icon != null) {
+        return new Promise((resolve, reject) => {
+          console.log(editData.icon.substr(0,10))
+          const fileData = editData.icon.replace(/^data:\w+\/\w+;base64,/, '')
+          const decodedFile = new Buffer(fileData, 'base64')
+          const fileType = filetype(decodedFile)
+          console.log(fileType)
+          const fileExtension = fileType.ext //あとでなんとかする
+          const contentType = fileType.mime //ここもなんとかする
+          const fileName = `${Math.random().toString(32).substring(2)}.${fileExtension}`
+          const params = {
+            Body: decodedFile,
+            Bucket: 'janken-rating',
+            // Key: [Math.random().toString(32).substring(2), fileExtension].join('.'),
+            Key: `icons/${fileName}`,
+            ContentType: contentType,
+            ACL: 'public-read'
+          }
+          //console.log(params)
+          s3.putObject(params).promise().then(() => {
+            //console.log('Success!!!')
+            conn.query('UPDATE `players` SET `icon`=? WHERE `id` = ?', [fileName, self.id])
+            resolve()
+          }).catch((err) => {
+            reject(err)
+          })
+        })
       }
-      return true
     })
   }
 
@@ -174,8 +193,8 @@ class Player {
     return this.checkAuth().then(() => {
       return mysql2.createConnection(dest)
     }).then(conn => {
-      // console.log(self.id)
-      console.log('122', roomId)
+      // //console.log(self.id)
+      //console.log('122', roomId)
       return conn.query('INSERT INTO `room_players` (`room_id`, `leader`, `player_id`) VALUES (?, 0, ?)', [roomId, self.id])
     }).then(() => {
       return this.getRoomStatus(roomId)

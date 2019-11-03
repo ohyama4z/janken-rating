@@ -5,6 +5,7 @@ import Login from './views/Login'
 import Home from './views/Home'
 import rooms from './views/rooms'
 import Waiting from './views/room/Waiting'
+import Profile from './views/Profile'
 // import Ready from './views/rooms/Ready'
 
 Vue.use(Router)
@@ -37,6 +38,11 @@ export default new Router({
       path: '/rooms/:roomId/waiting',
       name: 'waiting',
       component: Waiting
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: Profile
     }
   ]
 })

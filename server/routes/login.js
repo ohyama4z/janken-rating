@@ -18,7 +18,7 @@ router.post('/', (req, res) => {
   player.login(name, plainPass).then(token => {
     res.status(200).json({ status: 'ok', token })
   }).catch(err => {
-    console.log(err)
+    //console.log(err)
     if (err === 'unexpectedPas' || err === 'wrongPass') {
       res.status(401).json({ status: 'ng', err })
       return
@@ -29,8 +29,8 @@ router.post('/', (req, res) => {
   // --------------------------
   // const token = Math.random().toString(32).substring(2)
   // connection.query('SELECT `password`,`id` FROM `players` WHERE `name`=?', [name], (err, result) => {
-  //   console.log(name)
-  //   console.log(result)
+  //   //console.log(name)
+  //   //console.log(result)
   //   if (err) {
   //     res.status(500).json({ status: 'ng', err: 'resErr' })
   //     return
@@ -50,7 +50,7 @@ router.post('/', (req, res) => {
   //       connection.query('INSERT INTO `session` (`id`, `token`) VALUES (?, ?)', [result[0].id, token], (err, tokenRes) => {
   //         if (err) {
   //           // エラー表示
-  //           console.log(err)
+  //           //console.log(err)
   //           res.status(500).json({ status: 'ng', err: 'tokenErr' })
   //           return
   //         }

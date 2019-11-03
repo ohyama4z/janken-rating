@@ -19,7 +19,7 @@ router.post('/', (req, res) => {
   }).then((roomId) => {
     res.status(201).json({ id: roomId, status: 'ok' })
   }).catch(err => {
-    console.log(err)
+    //console.log(err)
     if (err.message === 'invalidToken') {
       res.status(401).json({ status: 'ng', err: 'invalidTokenErr' })
       return
@@ -34,7 +34,7 @@ router.get('/:roomId/waiting', (req, res) => {
   player.getRoomStatus(roomId).then(players => {
     res.status(200).json({ status: 'ok',　players })
   }).catch(err => {
-    console.log(err)
+    //console.log(err)
     res.status(500).json({ status: 'ng' })
   })
 })
@@ -47,7 +47,7 @@ router.post('/:roomId/join', (req, res) => {
   }).then(() => {
     return res.status(201).json({ status: 'ok' })
   }).catch(err => {
-    console.log(err)
+    //console.log(err)
     res.status(500).json({ status: 'ng' })
   })
 })

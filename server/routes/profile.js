@@ -3,9 +3,11 @@ const router = express.Router()
 const Player = require('../utils/player')
 
 router.get('/', (req, res) => {
-  const token = req.headers.authorize
+  const token = req.headers.authorization
   const player = new Player
-  player.getProfile(token).then(profile => {
+  player.authorize(token).then(() =>
+    player.getProfile(player.id)
+  ).then(profile => {
     return res.status(200).json({status: 'ok', profile})
   }).catch(err => {
     if (err === 'notExistEditData') {
@@ -16,10 +18,15 @@ router.get('/', (req, res) => {
 })
 
 router.post('/', (req, res) => {
-  const token = req.heders.authorize
+  const token = req.headers.authorization
   const player = new Player
-  player.authorize().then(() => {
-    return player.editProfile(token, req.body.edit)
+  player.authorize(token).then(() => {
+    return player.editProfile(req.body.editData)
+  }).then(profile => {
+    return res.status(200).json({status: 'ok', profile})
+  }).catch(err => {
+    console.log(err)
+    res.status(500).json({status: 'ng', err})
   })
 })
 

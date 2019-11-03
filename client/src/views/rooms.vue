@@ -61,10 +61,10 @@
           if (res.status === 'ok') {
             this.$router.push(`/rooms/${sendObj.roomId}/waiting`)
           } else {
-            console.log('ばか')
+            //console.log('ばか')
           }
         }).catch(err => {
-          console.log('あほ')
+          //console.log('あほ')
         })
       }
     }

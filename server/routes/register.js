@@ -14,12 +14,12 @@ const Player = require('../utils/player')
 router.post('/', (req, res, next) => {
   const name = req.body.name
   const plainPass = req.body.password
-  console.log(name, plainPass)
+  //console.log(name, plainPass)
   const player = new Player()
   player.register(name, plainPass).then(() => {
     res.status(201).json({ status: 'ok' })
   }).catch(err => {
-    console.log(err)
+    //console.log(err)
     if (
       err.status === 'nameLenErr' ||
       err.status === 'passLenErr' ||
@@ -32,7 +32,7 @@ router.post('/', (req, res, next) => {
   })
 
   // --------------------------------
-  // console.log(req)
+  // //console.log(req)
   // if (name.length > 10) {
   //   res.status(400).json({ status: 'ng', err: 'nameLenErr' })
   //   return
@@ -45,7 +45,7 @@ router.post('/', (req, res, next) => {
   // connection.query('SELECT COUNT(*) AS num FROM `players` WHERE `name`=?', [name], (err, result) => {
   //   if (err) {
   //     res.status(500).json({ status: 'ng', err: 'internalServerErr' })
-  //     console.log(err)
+  //     //console.log(err)
   //     return
   //   }
   //   if (result[0].num > 0) {
@@ -54,15 +54,15 @@ router.post('/', (req, res, next) => {
   //   }
   //   bcrypt.hash(plainPassword, saltRounds, (err, hash) => {
   //     if (err) {
-  //       console.log('ハッシュ化！！！')
+  //       //console.log('ハッシュ化！！！')
   //       res.status(500).json({ status: 'ng', err: 'internalServerErr' })
   //       return
   //     }
   //     connection.query(`INSERT INTO players (name, password) VALUES (?, ?);`, [name, hash], (err, result) => {
   //       if (err) {
-  //         console.log('データベース！！！')
+  //         //console.log('データベース！！！')
   //         res.status(500).json({ status: 'ng', err: 'internalServerErr' })
-  //         console.log(err)
+  //         //console.log(err)
   //         return
   //       }
   //       })

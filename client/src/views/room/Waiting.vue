@@ -18,7 +18,7 @@
           <vk-grid gutter="small" class="uk-flex-middle">
             <div class="uk-width-auto">
               <div v-if="player.icon">
-                <img class="uk-border-circle" width="40" height="40" src="player.icon">
+                <img class="uk-border-circle" width="160" height="160" :src="player.icon">
               </div>
               <div v-else>
                 <vk-icon class="uk-border-circle" width="40" height="40" icon="user"></vk-icon>
@@ -78,7 +78,7 @@
         this.$socket.emit('watchRoom',JSON.stringify(sendObj))
         return
       }).catch((err) => {
-        console.log(err)
+        //console.log(err)
       })
       return false
     },

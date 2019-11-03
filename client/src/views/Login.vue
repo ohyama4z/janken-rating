@@ -50,17 +50,17 @@ export default {
       const successed = true
       const method = 'POST'
       const body = Object.keys(sendObj).map((key)=>key+"="+encodeURIComponent(sendObj[key])).join("&")
-      console.log(body,sendObj)
+      //console.log(body,sendObj)
       const headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
       }
       fetch('/api/login', { method, headers, body }).then(res => res.json()).then(res => {
-        console.log(res.status)
+        //console.log(res.status)
         if (res.status === 'ok') {
           this.token = res.token,
           localStorage.setItem('token', this.token)
-          console.log(this.token)
+          //console.log(this.token)
           this.$router.push('home')
         } else {
           this.isFailedLogin = true
@@ -72,7 +72,7 @@ export default {
       //   syori
         
       // }).catch(e => {
-      //   console.log(e)
+      //   //console.log(e)
       //   this.isFailedLogin = true
       // })
       return false

@@ -123,7 +123,7 @@ export default {
         'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
       }
       fetch('/api/register', { method, headers, body }).then((res) => res.json()).then (res => {
-        console.log(res)
+        //console.log(res)
         if (res.status === 'ok') {
           this.hasRegistered = true
           this.$router.push('login')
