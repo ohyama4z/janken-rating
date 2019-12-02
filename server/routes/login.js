@@ -23,6 +23,7 @@ router.post('/', (req, res) => {
       res.status(401).json({ status: 'ng', err })
       return
     }
+    console.log(err)
     res.status(500).json({ status: 'ng' })
   })
 

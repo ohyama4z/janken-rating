@@ -4,7 +4,7 @@
     <vk-button 
       type="primary"
       v-on:click="startGame()"
-      v-bind:disabled="players.length>1"
+      v-bind:disabled="players.length<2"
       class="uk-align-center"
     >ゲーム開始</vk-button>
     <div 
@@ -52,7 +52,8 @@
     data () {
       return {
         players: [],
-        roomId: null
+        roomId: null,
+        leader: false
       }
     },
     mounted () { // ページが読み込まれた時
@@ -76,6 +77,7 @@
         this.players = res.players
         // this.$set(data, 'players', res.players)
         this.$socket.emit('watchRoom',JSON.stringify(sendObj))
+        // this.leader = res.leader
         return
       }).catch((err) => {
         //console.log(err)
@@ -89,7 +91,7 @@
     },
     methods: {
       startGame () {
-        sendObj = {
+        const sendObj = {
           roomId: this.roomId,
           players: this.players,
           token: localStorage.getItem('token')

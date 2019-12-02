@@ -204,21 +204,30 @@ class Player {
   }
 
   getRoomStatus (roomId) {
-    return mysql2.createConnection(dest).then(conn => {
+    // this.checkAuth().then(() => {
+    mysql2.createConnection(dest).then(conn => {
       return conn.query('SELECT * FROM `players`,`room_players` WHERE players.id=room_players.player_id AND room_players.room_id=?', [roomId])
     }).then(([rows]) => {
       const players = []
+      // let areYouLeader = false
       rows.forEach((row) => {
         players.push({
-          icon: row.icon,
+          icon: row.icon != null ? `http://localhost:9000/janken-rating/icons/${row.icon}` : null,
           leader: row.leader === 1,
           id: row.player_id,
           name: row.name,
           rate: row.rating,
           comment: row.comment
         })
+        // console.log(this)
+        // console.log(row.player_id)
+        // if (this.id === row.player_id && row.leader === 1) {
+        //   areYouLeader = true
+        // }
+        // console.log(players)
       })
-      return players
+      console.log(players)
+      return players// [players,areYouLeader]
     })
   }
 

@@ -31,11 +31,19 @@ router.post('/', (req, res) => {
 router.get('/:roomId/waiting', (req, res) => {
   const roomId = req.params.roomId
   const player = new Player()
-  player.getRoomStatus(roomId).then(players => {
-    res.status(200).json({ status: 'ok',　players })
+  player.authorize(req.headers.authorization).then(() => {
+    return player.getRoomStatus(roomId)
+  }).then((players) => {
+    res.status(200).json({
+      status: 'ok',
+      players
+    //  leader: areYouLeader
+    })
+    console.log(players)
   }).catch(err => {
-    //console.log(err)
-    res.status(500).json({ status: 'ng' })
+    console.log(req.headers)
+    console.log(err)
+    res.status(500).json({ status: 'ng', err})
   })
 })
 
