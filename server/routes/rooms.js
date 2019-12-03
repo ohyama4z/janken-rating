@@ -37,12 +37,8 @@ router.get('/:roomId/waiting', (req, res) => {
     res.status(200).json({
       status: 'ok',
       players
-    //  leader: areYouLeader
     })
-    console.log(players)
   }).catch(err => {
-    console.log(req.headers)
-    console.log(err)
     res.status(500).json({ status: 'ng', err})
   })
 })

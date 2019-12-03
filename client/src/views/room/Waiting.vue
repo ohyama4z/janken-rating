@@ -97,6 +97,7 @@
           token: localStorage.getItem('token')
         }
         this.$socket.emit('startGame',JSON.stringify(sendObj))
+        
       }
     }
   }

@@ -8,6 +8,7 @@ module.exports.notif = {
     //console.log(roomId, playerData)
   },
 
-  startedGame () {
+  startedGame (roomId, URL) {
+    io.to(roomId).emit('')
   }
 }

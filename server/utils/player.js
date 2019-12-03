@@ -205,7 +205,7 @@ class Player {
 
   getRoomStatus (roomId) {
     // this.checkAuth().then(() => {
-    mysql2.createConnection(dest).then(conn => {
+    return mysql2.createConnection(dest).then(conn => {
       return conn.query('SELECT * FROM `players`,`room_players` WHERE players.id=room_players.player_id AND room_players.room_id=?', [roomId])
     }).then(([rows]) => {
       const players = []
@@ -226,19 +226,32 @@ class Player {
         // }
         // console.log(players)
       })
-      console.log(players)
+      // console.log(players)
       return players// [players,areYouLeader]
+    }).then(players => {
+      // console.log(players)
+      return players
     })
   }
 
-  startGame (data) {
-    return this.checkAuth().then(() => {
-      if (data.players.length < 2) {
-        return Promise.reject(new Error('playersNumErr'))
-      }
-      this.$router.push(`/rooms/${data.roomId}/janken`)
-      return Promise.resolve
-    })
+  // const pubURL = Math.random().toString(32).substring(2)
+
+  async startGame(data) {
+    await this.checkAuth()
+
+    if (data.players.length < 2) {
+      throw new Error('playersNumErr')
+    }
+
+    
+    const conn = await mysql2.createConnection(dest)
+    await conn.query('DELETE * FROM `room_players` WHERE `room_id` = ?',[data.roomId])
+    await conn.query('DELETE * FROM `rooms` WHERE `id` = ?',[data.roomId])
+
+    const pubURL = Math.random().toString(32).substring(2)
+    await conn.query('INSERT INTO `matching_room` (`room_id`, `player_Id`) VALUES (?, ?)',[pubURL,data.player_id])
+    
+    return pubURL
   }
 }
 
