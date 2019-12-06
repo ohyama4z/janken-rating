@@ -244,11 +244,11 @@ class Player {
     }
 
     const conn = await mysql2.createConnection(dest)
-    await conn.query('DELETE * FROM `room_players` WHERE `room_id` = ?', [data.roomId])
-    await conn.query('DELETE * FROM `rooms` WHERE `id` = ?', [data.roomId])
+    await conn.query('DELETE FROM `room_players` WHERE `room_id` = ?', [data.roomId])
+    await conn.query('DELETE FROM `rooms` WHERE `id` = ?', [data.roomId])
 
     const pubURL = Math.random().toString(32).substring(2)
-    await conn.query('INSERT INTO `matching_room` (`room_id`, `player_Id`) VALUES (?, ?)', [pubURL, data.player_id])
+    await conn.query('INSERT INTO `matching_room` (`room_id`, `player_Id`) VALUES (?, ?)', [pubURL, this.id])
 
     await notif.startGame(data.roomId, pubURL)
   }
