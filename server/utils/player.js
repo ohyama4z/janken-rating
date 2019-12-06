@@ -126,7 +126,7 @@ class Player {
     return this.checkAuth().then(() => {
       return mysql2.createConnection(dest)
     }).then(conn => {
-      return conn.query('SELECT * FROM `players` WHERE `id`=?',[id])
+      return conn.query('SELECT * FROM `players` WHERE `id`=?', [id])
     }).then(([res]) => {
       //console.log(res)
       const playerData = {
@@ -159,7 +159,7 @@ class Player {
     }).then(([conn]) => {
       if (editData.icon != null) {
         return new Promise((resolve, reject) => {
-          console.log(editData.icon.substr(0,10))
+          console.log(editData.icon.substr(0, 10))
           const fileData = editData.icon.replace(/^data:\w+\/\w+;base64,/, '')
           const decodedFile = new Buffer(fileData, 'base64')
           const fileType = filetype(decodedFile)
@@ -193,7 +193,7 @@ class Player {
     return this.checkAuth().then(() => {
       return mysql2.createConnection(dest)
     }).then(conn => {
-      // //console.log(self.id)
+      //console.log(self.id)
       //console.log('122', roomId)
       return conn.query('INSERT INTO `room_players` (`room_id`, `leader`, `player_id`) VALUES (?, 0, ?)', [roomId, self.id])
     }).then(() => {
@@ -236,22 +236,21 @@ class Player {
 
   // const pubURL = Math.random().toString(32).substring(2)
 
-  async startGame(data) {
+  async startGame (data) {
     await this.checkAuth()
 
     if (data.players.length < 2) {
       throw new Error('playersNumErr')
     }
 
-    
     const conn = await mysql2.createConnection(dest)
-    await conn.query('DELETE * FROM `room_players` WHERE `room_id` = ?',[data.roomId])
-    await conn.query('DELETE * FROM `rooms` WHERE `id` = ?',[data.roomId])
+    await conn.query('DELETE * FROM `room_players` WHERE `room_id` = ?', [data.roomId])
+    await conn.query('DELETE * FROM `rooms` WHERE `id` = ?', [data.roomId])
 
     const pubURL = Math.random().toString(32).substring(2)
-    await conn.query('INSERT INTO `matching_room` (`room_id`, `player_Id`) VALUES (?, ?)',[pubURL,data.player_id])
-    
-    return pubURL
+    await conn.query('INSERT INTO `matching_room` (`room_id`, `player_Id`) VALUES (?, ?)', [pubURL, data.player_id])
+
+    await notif.startGame(data.roomId, pubURL)
   }
 }
 

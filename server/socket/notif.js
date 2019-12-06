@@ -9,6 +9,10 @@ module.exports.notif = {
   },
 
   startedGame (roomId, URL) {
-    io.to(roomId).emit('')
+    const roomMembers = io.sockets.clients(roomId)
+    roomMembers.forEach(roomMember => {
+      io[roomMember].leave(roomId)
+      io[roomMember].join(URL).emit('started', JSON.stringify({ matchURL: URL }))
+    })
   }
 }

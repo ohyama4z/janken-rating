@@ -39,7 +39,7 @@ router.get('/:roomId/waiting', (req, res) => {
       players
     })
   }).catch(err => {
-    res.status(500).json({ status: 'ng', err})
+    res.status(500).json({ status: 'ng', err })
   })
 })
 
@@ -51,7 +51,7 @@ router.post('/:roomId/join', (req, res) => {
   }).then(() => {
     return res.status(201).json({ status: 'ok' })
   }).catch(err => {
-    //console.log(err)
+    // console.log(err)
     res.status(500).json({ status: 'ng' })
   })
 })

@@ -87,6 +87,11 @@
     sockets : {
       playerData (unparsedData) {
         this.players = JSON.parse(unparsedData)
+      },
+
+      started (unparsedData) {
+        this.pubURL = JSON.parse(unparsedData)
+        this.$router.push(`/rooms/${sendObj.roomId}/janken`)
       }
     },
     methods: {
@@ -97,7 +102,6 @@
           token: localStorage.getItem('token')
         }
         this.$socket.emit('startGame',JSON.stringify(sendObj))
-        
       }
     }
   }

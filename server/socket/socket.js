@@ -26,10 +26,10 @@ module.exports = (io) => {
           return Promise.reject(new Error('notJoined'))
         }
         socket.join(data.roomId)
-        //console.log('watchRoom!!!!')
+        // console.log('watchRoom!!!!')
         // res.status(200).json({ status: 'ok' })
       }).catch(err => {
-        //console.log(err)
+        // console.log(err)
       })
     })
     socket.on('startGame', (data) => {
@@ -37,8 +37,7 @@ module.exports = (io) => {
       player.authorize(data.token).then(() => {
         return player.startGame(data)
       }).catch(err => {
-        //console.log(err)
-        
+        console.log(err)
       })
     })
   })
