@@ -14,13 +14,16 @@ module.exports.notif = {
   startGame (roomId, URL) {
     io.in(roomId).clients((error, clients) => {
       if (error) throw error
-      console.log(clients)
+      // console.log(clients)
       clients.forEach(client => {
-        const socket1 = io.of('/').connected[client]
+        const eachSoc = io.of('/').connected[client]
         // socket取得
-        socket1.leave(roomId)
-        socket1.join(URL).emit('started', JSON.stringify({ matchURL: URL }))
+        eachSoc.leave(roomId)
+        eachSoc.join(URL)
+        
+        console.log('シャミ')
       })
+      io.to(URL).emit('started', JSON.stringify({ matchURL: URL }))
     })
     // const roomMembers = findClientsSocket(roomId)
     // console.log(roomMembers)

@@ -6,6 +6,7 @@ import Home from './views/Home'
 import rooms from './views/rooms'
 import Waiting from './views/room/Waiting'
 import Profile from './views/Profile'
+import Matching from './views/room/Janken'
 // import Ready from './views/rooms/Ready'
 
 Vue.use(Router)
@@ -43,6 +44,11 @@ export default new Router({
       path: '/profile',
       name: 'profile',
       component: Profile
+    },
+    {
+      path: '/rooms/:pubURL/matching',
+      name: 'matching',
+      component: Matching
     }
   ]
 })

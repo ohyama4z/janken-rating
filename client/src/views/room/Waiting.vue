@@ -53,7 +53,8 @@
       return {
         players: [],
         roomId: null,
-        leader: false
+        leader: false,
+        pubURL: null
       }
     },
     mounted () { // ページが読み込まれた時
@@ -90,8 +91,11 @@
       },
 
       started (unparsedData) {
+        // console.log(unparsedData)
         this.pubURL = JSON.parse(unparsedData)
-        this.$router.push(`/rooms/${sendObj.roomId}/janken`)
+        // console.log(this.pubURL.matchURL)
+        this.$router.push(`/rooms/${this.pubURL.matchURL}/matching`)
+
       }
     },
     methods: {
@@ -102,6 +106,7 @@
           token: localStorage.getItem('token')
         }
         this.$socket.emit('startGame',JSON.stringify(sendObj))
+        console.log(this.pubURL.matchURL)
       }
     }
   }
