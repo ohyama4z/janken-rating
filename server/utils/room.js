@@ -14,87 +14,111 @@ class Room {
 
   exists () {
     if(this.id == null) {
-      throw new Error('invalidroomID')
+      throw new Error('uninitialized')
     }
+  }
+
+  async initWithEnterCode (enterCode) {
+    // get roomId from enter code
+    const conn = await mysql2.createConnection(dest)
+    const [res] = await conn.execute('SELECT `id` FROM `rooms` WHERE `enter_code`=?',[enterCode])
+    await this.init(res[0].id)
   }
 
   async init (roomId) {
+    if (roomId == null) {
+      throw new Error('roomIdIsRequired')
+    }
     const conn = await mysql2.createConnection(dest)
-    const res = await conn.execute('SELECT * FROM `rooms` WHERE `id` = ?',[roomId])
-    if ([res].length > 0) {
-      
+    const [res] = await conn.execute('SELECT * FROM `rooms` WHERE `id` = ?',[roomId])
+
+    if ( res.length === 1 ) {
+      this.id = roomId
+      return
+    }
+    throw new Error('invalidroomID')
+  }
+
+  async create () {
+    const conn = await mysql2.createConnection(dest)
+    const enterCode = Math.floor(Math.random() * 10000)
+    const roomId = Math.random().toString(32).substring(2)
+    await conn.execute('INSERT INTO `rooms` (`id`, `enter_code`) VALUES (?,?)', [roomId, enterCode])
+    this.id = roomId
+  }
+  async join (player, isLeader=false) {
+    this.exists()
+    await player.checkAuth()
+    const conn = await mysql2.createConnection(dest)
+    const leader = isLeader ? 1 : 0
+    await conn.execute('INSERT INTO `room_players` (`room_id`, `leader`, `player_id`) VALUES (?, ?, ?)', [this.id,leader, player.id])
+    const players = await this.getPlayers()
+    await notif.joined(this.id, players)
+  }
+
+  // getPlayers ... プレイヤー一覧の取得
+
+  async getPlayers () {
+    // this.checkAuth().then(() => {
+    this.exists()
+    const conn = await mysql2.createConnection(dest)
+    const [rows] = await conn.execute('SELECT * FROM `players`,`room_players` WHERE players.id=room_players.player_id AND room_players.room_id=?', [this.id])
+    const players = []
+      // let areYouLeader = false
+    rows.forEach((row) => {
+      players.push({
+        icon: row.icon != null ? `http://localhost:9000/janken-rating/icons/${row.icon}` : null,
+        leader: row.leader === 1,
+        id: row.player_id,
+        name: row.name,
+        rate: row.rating,
+        comment: row.comment
+      })
+    })
+    return players
+  }
+  
+  // getInfo
+  // enterCode, hogehoge === 'waiting', 'playing', 'finished'
+  
+
+  async getInfo () {
+    this.exists()
+    const conn = await mysql2.createConnection(dest)
+    const [res] = await conn.execute('SELECT `enter_code` FROM `rooms` WHERE `id`=?',[this.id])
+    return {
+      enterCode: res[0].enter_code,
+      hogehoge: 'string'
     }
   }
 
-  create (player) {
-    const self = this
-    return player.checkAuth().then(res => {
-      return mysql2.createConnection(dest)
-    }).then(conn => {
-      const roomId = Math.floor(Math.random() * 10000)
-      return Promise.all([
-        conn,
-        roomId,
-        conn.execute('INSERT INTO `rooms` (`id`, `player_id`) VALUES (?,?)', [roomId, self.id])
-      ])
-    }).then(([conn, roomId]) => {
-      return Promise.all([
-        roomId,
-        conn.execute('INSERT INTO `room_players` (`room_id`, `leader`, `player_id`) VALUES (?, 1, ?)', [roomId, self.id])
-      ])
-    }).then(([roomId]) => {
-      return roomId
-    })
+  async start (player) {
+    this.exists()
+    player.checkAuth()
+    const conn = await mysql2.createConnection(dest)
+    const [checkLen] = await conn.execute('SELECT * FROM `room_players` WHERE `room_id`=?',[this.id])
+    if (checkLen.length < 2) {
+      throw new Error('tooFewMember')
+    }
+    const [checkLeader] = await conn.execute('SELECT * FROM `room_players` WHERE `room_id`=? AND `player_id`=?',[this.id, player.id])
+    if (checkLeader.leader !== 1) {
+      throw new Error('youAreNotLeader')
+    }
+    await conn.execute('UPDATE `rooms` SET `enter_code`=null WHERE `id`=?', [this.id])
   }
 
-  join (player) {
-    const self = this
-    return player.checkAuth().then(() => {
-      return mysql2.createConnection(dest)
-    }).then(conn => {
-      //console.log(self.id)
-      //console.log('122', roomId)
-      return conn.execute('INSERT INTO `room_players` (`room_id`, `leader`, `player_id`) VALUES (?, 0, ?)', [roomId, self.id])
-    }).then(() => {
-      return this.getRoomStatus(this.id)
-    }).then(res => {
-      return notif.joined(roomId, res)
-    }).then(() => {})
+  async hasJoined (player) {
+    this.exists()
+    await player.checkAuth()
+    const conn = await mysql2.createConnection(dest)
+    const [res] = await conn.execute('SELECT `player_id` FROM `room_players` WHERE `room_id`=?',[this.id])
+    if (res.length === 0) {
+      throw new Error('notJoined')
+    }
+    return true
   }
 
-  getStatus (key,value) {
-    // this.checkAuth().then(() => {
-    return mysql2.createConnection(dest).then(conn => {
-      if (value === 'roomId') {
-        return conn.execute('SELECT * FROM `players`,`room_players` WHERE players.id=room_players.player_id AND room_players.room_id=?', [key])
-      } else if (value === 'pubURL') {
-        return conn.execute('SELECT * FROM `players`,`matching_room` WHERE players.id=matching_room.player_id AND matching_room.room_id=?', [key])
-      }
-    }).then(([rows]) => {
-      const players = []
-      // let areYouLeader = false
-      rows.forEach((row) => {
-        players.push({
-          icon: row.icon != null ? `http://localhost:9000/janken-rating/icons/${row.icon}` : null,
-          leader: row.leader === 1,
-          id: row.player_id,
-          name: row.name,
-          rate: row.rating,
-          comment: row.comment
-        })
-        // console.log(this)
-        // console.log(row.player_id)
-        // if (this.id === row.player_id && row.leader === 1) {
-        //   areYouLeader = true
-        // }
-        // console.log(players)
-      })
-      // console.log(players)
-      return players// [players,areYouLeader]
-    }).then(players => {
-      // console.log(players)
-      return players
-    })
-  }
 
 }
+
+module.exports = Room

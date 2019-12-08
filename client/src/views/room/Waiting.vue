@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="uk-text-center@s">room id : {{ roomId }}</div>
+    <div class="uk-text-center@s">enter code : {{ enterCode }}</div>
     <vk-button 
       type="primary"
       v-on:click="startGame()"
@@ -54,7 +54,7 @@
         players: [],
         roomId: null,
         leader: false,
-        pubURL: null
+        enterCode: null
       }
     },
     mounted () { // ページが読み込まれた時
@@ -76,6 +76,7 @@
           return Promise.reject(new Error('ばーか'))
         }
         this.players = res.players
+        this.enterCode = res.enterCode
         // this.$set(data, 'players', res.players)
         this.$socket.emit('watchRoom',JSON.stringify(sendObj))
         // this.leader = res.leader
@@ -88,13 +89,14 @@
     sockets : {
       playerData (unparsedData) {
         this.players = JSON.parse(unparsedData)
+        console.log(unparsedData)
       },
 
       started (unparsedData) {
         // console.log(unparsedData)
-        this.pubURL = JSON.parse(unparsedData)
+        this.roomId = JSON.parse(unparsedData)
         // console.log(this.pubURL.matchURL)
-        this.$router.push(`/rooms/${this.pubURL.matchURL}/matching`)
+        this.$router.push(`/rooms/${this.roomId.matchURL}/matching`)
 
       }
     },
@@ -106,7 +108,7 @@
           token: localStorage.getItem('token')
         }
         this.$socket.emit('startGame',JSON.stringify(sendObj))
-        console.log(this.pubURL.matchURL)
+        console.log(this.roomId.matchURL)
       }
     }
   }

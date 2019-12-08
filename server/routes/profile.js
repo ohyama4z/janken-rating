@@ -14,6 +14,7 @@ router.get('/', (req, res) => {
       return res.status(400).json({status: 'ng', err})
     }
     res.status(500).json({status: 'ng'})
+    console.log(err)
   })
 })
 
@@ -25,8 +26,8 @@ router.post('/', (req, res) => {
   }).then(profile => {
     return res.status(200).json({status: 'ok', profile})
   }).catch(err => {
-    console.log(err)
     res.status(500).json({status: 'ng', err})
+    console.log(err)
   })
 })
 

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- ホスト: mysql
--- 生成日時: 2019 年 10 月 26 日 12:41
+-- 生成日時: 2019 年 12 月 08 日 09:16
 -- サーバのバージョン： 8.0.18
 -- PHP のバージョン: 7.2.23
 
@@ -38,6 +38,17 @@ CREATE TABLE `history` (
 -- --------------------------------------------------------
 
 --
+-- テーブルの構造 `matching_room`
+--
+
+CREATE TABLE `matching_room` (
+  `room_id` varchar(100) NOT NULL,
+  `player_id` int(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- テーブルの構造 `players`
 --
 
@@ -57,8 +68,8 @@ CREATE TABLE `players` (
 --
 
 CREATE TABLE `rooms` (
-  `id` int(11) NOT NULL,
-  `player_id` int(100) NOT NULL
+  `id` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `enter_code` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -68,7 +79,7 @@ CREATE TABLE `rooms` (
 --
 
 CREATE TABLE `room_players` (
-  `room_id` int(100) NOT NULL,
+  `room_id` varchar(100) NOT NULL,
   `leader` tinyint(1) NOT NULL,
   `player_id` int(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -83,16 +94,6 @@ CREATE TABLE `session` (
   `id` int(11) NOT NULL,
   `token` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- テーブルの構造 `matching_room`
---
-
-CREATE TABLE `matching_room` (
-  `room_id` varchar(100) NOT NULL,
-  `player_id` int(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-COMMIT;
 
 --
 -- ダンプしたテーブルのインデックス

@@ -162,34 +162,13 @@ class Player {
     })
   }
 
-
-
-  // const pubURL = Math.random().toString(32).substring(2)
-
-  async startGame (data) {
-    await this.checkAuth()
-
-    if (data.players.length < 2) {
-      throw new Error('playersNumErr')
-    }
-
-    const conn = await mysql2.createConnection(dest)
-    await conn.execute('DELETE FROM `room_players` WHERE `room_id` = ?', [data.roomId])
-    await conn.execute('DELETE FROM `rooms` WHERE `id` = ?', [data.roomId])
-
-    const pubURL = Math.random().toString(32).substring(2)
-    await conn.execute('INSERT INTO `matching_room` (`room_id`, `player_Id`) VALUES (?, ?)', [pubURL, this.id])
-
-    await notif.startGame(data.roomId, pubURL)
-  }
-
   async sendHand (data) {
     await this.checkAuth()
     const jankenData = {
       playerId: this.id,
       hand: data.hand
     }
-    await notif.startGame(data.pubURL,jankenData)
+    await notif.startGame(data.roomId,jankenData)
     return jankenData
   }
 }

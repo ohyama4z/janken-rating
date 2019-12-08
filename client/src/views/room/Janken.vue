@@ -20,15 +20,15 @@ export default {
   data () {
     return {
       players: [],
-      pubURL: null,
+      roomId: null,
       hand: null,
       jankenData: {}
     }
   },
   mounted () {
-    this.pubURL = this.$route.params.pubURL
+    this.roomId = this.$route.params.roomId
     const sendObj = {
-      pubURL: this.pubURL,
+      roomId: this.roomId,
       token: localStorage.getItem('token')
     }
     const method = 'GET'
@@ -38,7 +38,7 @@ export default {
       'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
       'Authorization': localStorage.getItem('token')
     }
-    fetch(`/api/rooms/${this.pubURL}/matching`, { method, headers }).then((res) => res.json()).then (res => {
+    fetch(`/api/rooms/${this.roomId}/matching`, { method, headers }).then((res) => res.json()).then (res => {
       if (res.status !== 'ok') {
         return Promise.reject(new Error('ばーか'))
       }
@@ -60,7 +60,7 @@ export default {
   methods: {
     sendHand () {
       const sendObj = {
-        pubURL: this.pubURL,
+        roomId: this.roomId,
         players: this.players,
         token: localStorage.getItem('token'),
         hand: this.hand

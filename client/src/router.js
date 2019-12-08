@@ -46,7 +46,7 @@ export default new Router({
       component: Profile
     },
     {
-      path: '/rooms/:pubURL/matching',
+      path: '/rooms/:roomId/matching',
       name: 'matching',
       component: Matching
     }

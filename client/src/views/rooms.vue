@@ -10,7 +10,7 @@
       <vk-card v-on:click="joinRoom()" type="primary">
         <vk-card-title>入室</vk-card-title>
         <p>ルームIDを入力</p>
-        <input class="uk-input uk-form-width-medium uk-form-large" type="number" v-model="roomId" placeholder="1234">
+        <input class="uk-input uk-form-width-medium uk-form-large" type="number" v-model="enterCode" placeholder="1234">
       </vk-card>
     </div>
     <div v-if="isFailedCreated" class="uk-text-center@s">部屋の作成に失敗しました、時間を置いて再度お試しください</div>
@@ -22,7 +22,7 @@
     name: 'rooms',
     data () {
       return{
-        roomId: null,
+        enterCode: null,
         isFailedCreated: false
       }
     },
@@ -49,7 +49,7 @@
       joinRoom () {
         const sendObj = {
           token: localStorage.getItem('token'),
-          roomId: this.roomId
+          enterCode: this.enterCode
         }
         const method = 'POST'
         const body = Object.keys(sendObj).map((key)=>key+"="+encodeURIComponent(sendObj[key])).join("&")
@@ -57,9 +57,9 @@
           'Accept': 'application/json',
           'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
         }
-        fetch(`/api/rooms/${sendObj.roomId}/join`, { method, headers, body }).then((res) => res.json()).then (res => {
+        fetch(`/api/rooms/${sendObj.enterCode}/join`, { method, headers, body }).then((res) => res.json()).then (res => {
           if (res.status === 'ok') {
-            this.$router.push(`/rooms/${sendObj.roomId}/waiting`)
+            this.$router.push(`/rooms/${res.roomId}/waiting`)
           } else {
             //console.log('ばか')
           }
