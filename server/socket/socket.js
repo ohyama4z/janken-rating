@@ -14,13 +14,13 @@ module.exports = (io) => {
       mysql2.createConnection(dest).then(conn => {
         return Promise.all([
           conn,
-          conn.query('SELECT `id` FROM `session` WHERE `token`=?', [data.token])
+          conn.execute('SELECT `id` FROM `session` WHERE `token`=?', [data.token])
         ])
       }).then(([conn, [res]]) => {
         if (res.length === 0) {
           return Promise.reject(new Error('invalidToken'))
         }
-        return conn.query('SELECT `player_id` FROM `room_players` WHERE `room_id`=? AND `player_id`=?', [data.roomId, res.id])
+        return conn.execute('SELECT `player_id` FROM `room_players` WHERE `room_id`=? AND `player_id`=?', [data.roomId, res.id])
       }).then(res => {
         if (res.length === 0) {
           return Promise.reject(new Error('notJoined'))
@@ -32,12 +32,23 @@ module.exports = (io) => {
         // console.log(err)
       })
     })
+
     socket.on('startGame', (unparsedData) => {
       const player = new Player
       const data = JSON.parse(unparsedData)
       // console.log(data)
       player.authorize(data.token).then(() => {
         return player.startGame(data)
+      }).catch(err => {
+        console.log(err)
+      })
+    })
+
+    socket.on('sendHand', (unparsedData) => {
+      const player = new Player
+      const data = JSON.parse(unparsedData)
+      player.authorize(data.token).then(() => {
+        return player.sendHand(data)
       }).catch(err => {
         console.log(err)
       })

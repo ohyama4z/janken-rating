@@ -5,13 +5,8 @@ const saltRounds = 10
 const notif = require('../socket/notif').notif
 const filetype = require('file-type')
 const aws = require('aws-sdk')
-const s3 = new aws.S3({
-  accessKeyId: 'janken-rating' ,
-  secretAccessKey: 'password' ,
-  endpoint: 'http://minio:9000' ,
-  s3ForcePathStyle: true, // needed with minio?
-  signatureVersion: 'v4'
-})
+const awsS3 = require('./common').awsS3
+const s3 = new aws.S3(awsS3)
 
 class Player {
   constructor () {
@@ -21,7 +16,7 @@ class Player {
   authorize (token) {
     const self = this
     return mysql2.createConnection(dest).then(conn => {
-      return conn.query('SELECT `id` FROM `session` WHERE `token`=?', [token])
+      return conn.execute('SELECT `id` FROM `session` WHERE `token`=?', [token])
     }).then(([res]) => {
       if (res.length === 0) {
         return Promise.reject(new Error('invalidToken'))
@@ -37,27 +32,6 @@ class Player {
       return Promise.reject(new Error('unauthorized'))
     }
     return Promise.resolve()
-  }
-
-  createRoom () {
-    const self = this
-    return this.checkAuth().then(res => {
-      return mysql2.createConnection(dest)
-    }).then(conn => {
-      const roomId = Math.floor(Math.random() * 10000)
-      return Promise.all([
-        conn,
-        roomId,
-        conn.query('INSERT INTO `rooms` (`id`, `player_id`) VALUES (?,?)', [roomId, self.id])
-      ])
-    }).then(([conn, roomId]) => {
-      return Promise.all([
-        roomId,
-        conn.query('INSERT INTO `room_players` (`room_id`, `leader`, `player_id`) VALUES (?, 1, ?)', [roomId, self.id])
-      ])
-    }).then(([roomId]) => {
-      return roomId
-    })
   }
 
   register (name, plainPass) {
@@ -76,7 +50,7 @@ class Player {
     ).then(conn => {
       return Promise.all([
         conn,
-        conn.query('SELECT COUNT(*) AS num FROM `players` WHERE `name`=?', [name])
+        conn.execute('SELECT COUNT(*) AS num FROM `players` WHERE `name`=?', [name])
       ])
     }).then(([conn, res]) => {
       if (res[0].num > 0) {
@@ -87,7 +61,7 @@ class Player {
         bcrypt.hash(plainPass, saltRounds)
       ])
     }).then(([conn, hash]) => {
-      return conn.query(`INSERT INTO players (name, password) VALUES (?, ?);`, [name, hash])
+      return conn.execute(`INSERT INTO players (name, password) VALUES (?, ?);`, [name, hash])
     }).then(() => {})
   }
 
@@ -95,7 +69,7 @@ class Player {
     return mysql2.createConnection(dest).then(conn => {
       return Promise.all([
         conn,
-        conn.query('SELECT `password`,`id` FROM `players` WHERE `name`=?', [name])
+        conn.execute('SELECT `password`,`id` FROM `players` WHERE `name`=?', [name])
       ])
     }).then(([conn, [res]]) => {
       if (res.length === 0) {
@@ -115,7 +89,7 @@ class Player {
       const token = Math.random().toString(32).substring(2)
       return Promise.all([
         token,
-        conn.query('INSERT INTO `session` (`id`, `token`) VALUES (?, ?)', [id, token])
+        conn.execute('INSERT INTO `session` (`id`, `token`) VALUES (?, ?)', [id, token])
       ])
     }).then(([token]) => {
       return token
@@ -126,7 +100,7 @@ class Player {
     return this.checkAuth().then(() => {
       return mysql2.createConnection(dest)
     }).then(conn => {
-      return conn.query('SELECT * FROM `players` WHERE `id`=?', [id])
+      return conn.execute('SELECT * FROM `players` WHERE `id`=?', [id])
     }).then(([res]) => {
       //console.log(res)
       const playerData = {
@@ -152,7 +126,7 @@ class Player {
       if (editData.comment != null) {
         return Promise.all([
           conn,
-          conn.query('UPDATE `players` SET `comment`=? WHERE `id` = ?', [editData.comment, self.id])
+          conn.execute('UPDATE `players` SET `comment`=? WHERE `id` = ?', [editData.comment, self.id])
         ])
       }
       return [conn]
@@ -178,7 +152,7 @@ class Player {
           //console.log(params)
           s3.putObject(params).promise().then(() => {
             //console.log('Success!!!')
-            conn.query('UPDATE `players` SET `icon`=? WHERE `id` = ?', [fileName, self.id])
+            conn.execute('UPDATE `players` SET `icon`=? WHERE `id` = ?', [fileName, self.id])
             resolve()
           }).catch((err) => {
             reject(err)
@@ -188,51 +162,7 @@ class Player {
     })
   }
 
-  joinRoom (roomId) {
-    const self = this
-    return this.checkAuth().then(() => {
-      return mysql2.createConnection(dest)
-    }).then(conn => {
-      //console.log(self.id)
-      //console.log('122', roomId)
-      return conn.query('INSERT INTO `room_players` (`room_id`, `leader`, `player_id`) VALUES (?, 0, ?)', [roomId, self.id])
-    }).then(() => {
-      return this.getRoomStatus(roomId)
-    }).then(res => {
-      return notif.joined(roomId, res)
-    }).then(() => {})
-  }
 
-  getRoomStatus (roomId) {
-    // this.checkAuth().then(() => {
-    return mysql2.createConnection(dest).then(conn => {
-      return conn.query('SELECT * FROM `players`,`room_players` WHERE players.id=room_players.player_id AND room_players.room_id=?', [roomId])
-    }).then(([rows]) => {
-      const players = []
-      // let areYouLeader = false
-      rows.forEach((row) => {
-        players.push({
-          icon: row.icon != null ? `http://localhost:9000/janken-rating/icons/${row.icon}` : null,
-          leader: row.leader === 1,
-          id: row.player_id,
-          name: row.name,
-          rate: row.rating,
-          comment: row.comment
-        })
-        // console.log(this)
-        // console.log(row.player_id)
-        // if (this.id === row.player_id && row.leader === 1) {
-        //   areYouLeader = true
-        // }
-        // console.log(players)
-      })
-      // console.log(players)
-      return players// [players,areYouLeader]
-    }).then(players => {
-      // console.log(players)
-      return players
-    })
-  }
 
   // const pubURL = Math.random().toString(32).substring(2)
 
@@ -244,13 +174,23 @@ class Player {
     }
 
     const conn = await mysql2.createConnection(dest)
-    await conn.query('DELETE FROM `room_players` WHERE `room_id` = ?', [data.roomId])
-    await conn.query('DELETE FROM `rooms` WHERE `id` = ?', [data.roomId])
+    await conn.execute('DELETE FROM `room_players` WHERE `room_id` = ?', [data.roomId])
+    await conn.execute('DELETE FROM `rooms` WHERE `id` = ?', [data.roomId])
 
     const pubURL = Math.random().toString(32).substring(2)
-    await conn.query('INSERT INTO `matching_room` (`room_id`, `player_Id`) VALUES (?, ?)', [pubURL, this.id])
+    await conn.execute('INSERT INTO `matching_room` (`room_id`, `player_Id`) VALUES (?, ?)', [pubURL, this.id])
 
     await notif.startGame(data.roomId, pubURL)
+  }
+
+  async sendHand (data) {
+    await this.checkAuth()
+    const jankenData = {
+      playerId: this.id,
+      hand: data.hand
+    }
+    await notif.startGame(data.pubURL,jankenData)
+    return jankenData
   }
 }
 

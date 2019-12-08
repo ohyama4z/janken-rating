@@ -42,7 +42,7 @@ router.post('/', (req, res, next) => {
   //   return
   // }
   // db
-  // connection.query('SELECT COUNT(*) AS num FROM `players` WHERE `name`=?', [name], (err, result) => {
+  // connection.execute('SELECT COUNT(*) AS num FROM `players` WHERE `name`=?', [name], (err, result) => {
   //   if (err) {
   //     res.status(500).json({ status: 'ng', err: 'internalServerErr' })
   //     //console.log(err)
@@ -58,7 +58,7 @@ router.post('/', (req, res, next) => {
   //       res.status(500).json({ status: 'ng', err: 'internalServerErr' })
   //       return
   //     }
-  //     connection.query(`INSERT INTO players (name, password) VALUES (?, ?);`, [name, hash], (err, result) => {
+  //     connection.execute(`INSERT INTO players (name, password) VALUES (?, ?);`, [name, hash], (err, result) => {
   //       if (err) {
   //         //console.log('データベース！！！')
   //         res.status(500).json({ status: 'ng', err: 'internalServerErr' })

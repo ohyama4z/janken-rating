@@ -29,7 +29,7 @@ router.post('/', (req, res) => {
 
   // --------------------------
   // const token = Math.random().toString(32).substring(2)
-  // connection.query('SELECT `password`,`id` FROM `players` WHERE `name`=?', [name], (err, result) => {
+  // connection.execute('SELECT `password`,`id` FROM `players` WHERE `name`=?', [name], (err, result) => {
   //   //console.log(name)
   //   //console.log(result)
   //   if (err) {
@@ -48,7 +48,7 @@ router.post('/', (req, res) => {
   //     if (passRes) {
   //       // res.json({ status: 'ok' })
   //       // INSERT INTO `session` (`id`, `token`) VALUES ('13', 'b');
-  //       connection.query('INSERT INTO `session` (`id`, `token`) VALUES (?, ?)', [result[0].id, token], (err, tokenRes) => {
+  //       connection.execute('INSERT INTO `session` (`id`, `token`) VALUES (?, ?)', [result[0].id, token], (err, tokenRes) => {
   //         if (err) {
   //           // エラー表示
   //           //console.log(err)

@@ -29,10 +29,11 @@ router.post('/', (req, res) => {
 })
 
 router.get('/:roomId/waiting', (req, res) => {
+  
   const roomId = req.params.roomId
   const player = new Player()
   player.authorize(req.headers.authorization).then(() => {
-    return player.getRoomStatus(roomId)
+    return player.getRoomStatus(roomId,'roomId')
   }).then((players) => {
     res.status(200).json({
       status: 'ok',
@@ -53,6 +54,21 @@ router.post('/:roomId/join', (req, res) => {
   }).catch(err => {
     // console.log(err)
     res.status(500).json({ status: 'ng' })
+  })
+})
+
+router.get('/:pubURL/matching', (req, res) => {
+  const pubURL = req.params.pubURL
+  const player = new Player()
+  player.authorize(req.headers.authorization).then(() => {
+    return player.getRoomStatus(pubURL, 'pubURL')
+  }).then((players) => {
+    res.status(200).json({
+      status: 'ok',
+      players
+    })
+  }).catch(err => {
+    res.status(500).json({ status: 'ng', err })
   })
 })
 

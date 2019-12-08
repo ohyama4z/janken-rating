@@ -20,12 +20,14 @@ module.exports.notif = {
         // socket取得
         eachSoc.leave(roomId)
         eachSoc.join(URL)
-        
-        console.log('シャミ')
       })
       io.to(URL).emit('started', JSON.stringify({ matchURL: URL }))
     })
     // const roomMembers = findClientsSocket(roomId)
     // console.log(roomMembers)
+  },
+
+  sendHand (URL,jankenData) {
+    io.to(URL).emit('sendHand', JSON.stringify({ jankenData }))
   }
 }
