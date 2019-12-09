@@ -28,6 +28,19 @@ module.exports = (io) => {
       }
     })
 
+    socket.on('startMatch', async (unparsedData) => {
+      try {
+        const player = new Player()
+        const data = JSON.parse(unparsedData)
+        await player.authorize(data.token)
+        const room = new Room()
+        await room.init(data,roomId)
+        await room.
+      } catch (err) {
+        
+      }
+    })
+
     socket.on('sendHand', (unparsedData) => {
       const player = new Player()
       const data = JSON.parse(unparsedData)

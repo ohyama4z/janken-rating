@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- ホスト: mysql
--- 生成日時: 2019 年 12 月 08 日 09:16
+-- 生成日時: 2019 年 12 月 09 日 10:19
 -- サーバのバージョン： 8.0.18
 -- PHP のバージョン: 7.2.23
 
@@ -68,8 +68,9 @@ CREATE TABLE `players` (
 --
 
 CREATE TABLE `rooms` (
-  `id` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `enter_code` int(11) DEFAULT NULL
+  `id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `enter_code` int(11) DEFAULT NULL,
+  `start_time` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

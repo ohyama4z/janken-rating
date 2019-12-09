@@ -99,13 +99,10 @@
     },
     methods: {
       startGame () {
-        const now = new Date()
-        const selectLimit = now.getSeconds()+10
         const sendObj = {
           roomId: this.roomId,
           players: this.players,
           token: localStorage.getItem('token'),
-          selectLimit
         }
         this.$socket.emit('startGame',JSON.stringify(sendObj))
         // console.log(this.roomId.matchURL)

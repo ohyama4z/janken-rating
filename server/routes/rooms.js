@@ -71,9 +71,11 @@ router.get('/:roomId/matching', async (req, res) => {
     const room = new Room()
     await room.init(roomId)
     const players = await room.getPlayers()
+    const info = await room.getInfo()
     res.status(200).json({
       status: 'ok',
-      players
+      players,
+      info
     })
   } catch (err) {
     res.status(500).json({ status: 'ng', err })

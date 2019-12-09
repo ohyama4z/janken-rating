@@ -42,7 +42,7 @@ class Room {
     const conn = await mysql2.createConnection(dest)
     const enterCode = Math.floor(Math.random() * 10000)
     const roomId = Math.random().toString(32).substring(2)
-    await conn.execute('INSERT INTO `rooms` (`id`, `enter_code`) VALUES (?,?)', [roomId, enterCode])
+    await conn.execute('INSERT INTO `rooms` (`id`, `enter_code`, `state`) VALUES (?,?,`wating`)', [roomId, enterCode])
     this.id = roomId
   }
   async join (player, isLeader = false) {
@@ -80,12 +80,13 @@ class Room {
   async getInfo (player) {
     this.exists()
     const conn = await mysql2.createConnection(dest)
-    const [res] = await conn.execute('SELECT `enter_code` FROM `rooms` WHERE `id`=?', [this.id])
+    const [res] = await conn.execute('SELECT `enter_code`,`start_time`,`state` FROM `rooms` WHERE `id`=?', [this.id])
     const [leaderId] = await conn.execute('SELECT `player_id` FROM `room_players` WHERE `leader`=1 AND `room_id`=?', [this.id])
     return {
       enterCode: res[0].enter_code,
       leader: leaderId[0].player_id === player.id,
-      status: 'wating'
+      startTime: res[0].start_time,
+      state: res[0].state
     }
   }
 
@@ -101,7 +102,8 @@ class Room {
     if (res[0].leader !== 1) {
       throw new Error('youAreNotLeader')
     }
-    await conn.execute('UPDATE `rooms` SET `enter_code`=null WHERE `id`=?', [this.id])
+    const limit = Date.now() + 10
+    await conn.execute('UPDATE `rooms` SET `enter_code`=null, `state`=`matching`, `start_time`=? WHERE `id`=?', [limit, this.id])
     await notif.started(this.id)
   }
 

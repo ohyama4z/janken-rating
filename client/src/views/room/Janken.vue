@@ -1,17 +1,11 @@
 <template>
-  <form class="uk-form-stacked">
-
-    <div class="uk-margin uk-align-center">
-      <div class="uk-form-label">Your Hand</div>
-      <div class="uk-form-controls">
-        <label><input class="uk-radio" type="radio" name="hand" value="gu-" v-model="hand"> グー</label><br>
-        <label><input class="uk-radio" type="radio" name="hand" value="choki" v-model="hand"> チョキ</label><br>
-        <label><input class="uk-radio" type="radio" name="hand" value="pa-" v-model="hand"> パー</label><br>
-        <vk-button @click="sendHand()" type="primary">{{hand}}で確定</vk-button>
-      </div>
-    </div>
-
-  </form>
+  <div>
+    <vk-button-group>
+      <vk-button v-bind:type="primary">グー</vk-button>
+      <vk-button v-bind:type="primary">チョキ</vk-button>
+      <vk-button v-bind:type="primary">パー</vk-button>
+    </vk-button-group>
+  </div>
 </template>
 
 <script>
@@ -22,34 +16,35 @@ export default {
       players: [],
       roomId: null,
       hand: null,
-      jankenData: {}
+      limit: null
     }
   },
-  mounted () {
-    this.roomId = this.$route.params.roomId
-    const sendObj = {
-      roomId: this.roomId,
-      token: localStorage.getItem('token')
-    }
-    const method = 'GET'
-    // const body = Object.keys().map((key)=>key+"="+encodeURIComponent()).join("&")
-    const headers = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
-      'Authorization': localStorage.getItem('token')
-    }
-    fetch(`/api/rooms/${this.roomId}/matching`, { method, headers }).then((res) => res.json()).then (res => {
+  async mounted () {
+    try{
+      this.roomId = this.$route.params.roomId
+      const sendObj = {
+        roomId: this.roomId,
+        token: localStorage.getItem('token')
+      }
+      const method = 'GET'
+      // const body = Object.keys().map((key)=>key+"="+encodeURIComponent()).join("&")
+      const headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+        'Authorization': localStorage.getItem('token')
+      }
+      const response = await fetch(`/api/rooms/${this.roomId}/matching`, { method, headers })
+      const res = response.json()
       if (res.status !== 'ok') {
-        return Promise.reject(new Error('ばーか'))
+        throw new Error('ばーか')
       }
       this.players = res.players
-      // this.$set(data, 'players', res.players)
-      this.$socket.emit('watchRoom',JSON.stringify(sendObj))
-      // this.leader = res.leader
-      return
-    }).catch((err) => {
-      //console.log(err)
-    })
+      this.limit = res.info.startTime
+     this.$socket.emit()
+      await setTimeout(janeken(hand), Date.now()-this.limit)
+    } catch (err) {
+      console.log(err)
+    }
     return false
   },
   sockets: {
@@ -66,6 +61,11 @@ export default {
         hand: this.hand
       }
       this.$socket.emit('sendHand',JSON.stringify(sendObj))
+    }
+  },
+  computed: {
+    guType () {
+      if(this.hand)
     }
   }
 }
