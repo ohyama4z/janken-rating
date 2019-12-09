@@ -4,7 +4,7 @@
     <vk-button 
       type="primary"
       v-on:click="startGame()"
-      v-bind:disabled="players.length<2"
+      v-bind:disabled="players.length<2 || !leader"
       class="uk-align-center"
     >ゲーム開始</vk-button>
     <div 
@@ -77,6 +77,7 @@
         }
         this.players = res.players
         this.enterCode = res.enterCode
+        this.leader = res.leader
         // this.$set(data, 'players', res.players)
         this.$socket.emit('watchRoom',JSON.stringify(sendObj))
         // this.leader = res.leader
@@ -89,26 +90,25 @@
     sockets : {
       playerData (unparsedData) {
         this.players = JSON.parse(unparsedData)
-        console.log(unparsedData)
+        // console.log(unparsedData)
       },
 
-      started (unparsedData) {
-        // console.log(unparsedData)
-        this.roomId = JSON.parse(unparsedData)
-        // console.log(this.pubURL.matchURL)
-        this.$router.push(`/rooms/${this.roomId.matchURL}/matching`)
-
+      startGame () {
+        this.$router.push(`/rooms/${this.roomId}/matching`)
       }
     },
     methods: {
       startGame () {
+        const now = new Date()
+        const selectLimit = now.getSeconds()+10
         const sendObj = {
           roomId: this.roomId,
           players: this.players,
-          token: localStorage.getItem('token')
+          token: localStorage.getItem('token'),
+          selectLimit
         }
         this.$socket.emit('startGame',JSON.stringify(sendObj))
-        console.log(this.roomId.matchURL)
+        // console.log(this.roomId.matchURL)
       }
     }
   }

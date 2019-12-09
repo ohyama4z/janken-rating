@@ -12,23 +12,24 @@ module.exports = (io) => {
       const res = await room.hasJoined(player)
       if (res) {
         socket.join(room.id)
-        console.log('watch?')
       }
     })
 
-    socket.on('startGame', (unparsedData) => {
-      const player = new Player
-      const data = JSON.parse(unparsedData)
-      // console.log(data)
-      player.authorize(data.token).then(() => {
-        return player.startGame(data)
-      }).catch(err => {
+    socket.on('startGame', async (unparsedData) => {
+      try {
+        const player = new Player()
+        const data = JSON.parse(unparsedData)
+        await player.authorize(data.token)
+        const room = new Room()
+        await room.init(data.roomId)
+        await room.start(player)
+      } catch (err) {
         console.log(err)
-      })
+      }
     })
 
     socket.on('sendHand', (unparsedData) => {
-      const player = new Player
+      const player = new Player()
       const data = JSON.parse(unparsedData)
       player.authorize(data.token).then(() => {
         return player.sendHand(data)

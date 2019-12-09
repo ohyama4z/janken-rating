@@ -85,7 +85,6 @@ export default {
         .catch(error => this.setError(error, '画像のアップロードに失敗しました。'))
     },
     upload () {
-      console.log
       const sendObj = {
       editData: this.editData
     }

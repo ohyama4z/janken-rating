@@ -1,17 +1,7 @@
 const express = require('express')
 const router = express.Router()
-const mysql = require('mysql')
-const mysql2 = require('mysql2/promise')
 const Player = require('../utils/player')
 const Room = require('../utils/room')
-
-// const saltRounds = 10
-const dest = {
-  host: 'mysql',
-  user: 'janken',
-  password: 'rating',
-  database: 'janken_rating'
-}
 
 router.post('/', async (req, res) => {
   try {
@@ -19,7 +9,7 @@ router.post('/', async (req, res) => {
     await player.authorize(req.body.token)
     const room = new Room()
     await room.create()
-    await room.join(player,true)
+    await room.join(player, true)
     res.status(201).json({ id: room.id, status: 'ok' })
   } catch (err) {
     if (err.message === 'invalidToken') {
@@ -36,15 +26,16 @@ router.get('/:roomId/waiting', async (req, res) => {
     const player = new Player()
     await player.authorize(req.headers.authorization)
     const room = new Room()
-    // console.log(req.headers)
+
     await room.init(req.params.roomId)
     const players = await room.getPlayers()
-    const info = await room.getInfo()
-    console.log(players)
+    const info = await room.getInfo(player)
+    // console.log(players)
     res.status(200).json({
-        status: 'ok',
-        players,
-        enterCode: info.enterCode
+      status: 'ok',
+      players,
+      leader: info.leader,
+      enterCode: info.enterCode
     })
   } catch (err) {
     if (err.message === 'invalidToken') {
@@ -65,11 +56,12 @@ router.post('/:enterCode/join', async (req, res) => {
     await room.initWithEnterCode(enterCode)
 
     await room.join(player)
-    return res.status(201).json({ status: 'ok', roomId: room.id  })
+    return res.status(201).json({ status: 'ok', roomId: room.id })
   } catch (err) {
     res.status(500).json({ status: 'ng' })
     console.log(err)
-  }})
+  }
+})
 
 router.get('/:roomId/matching', async (req, res) => {
   try {
@@ -77,6 +69,7 @@ router.get('/:roomId/matching', async (req, res) => {
     const player = new Player()
     player.authorize(req.headers.authorization)
     const room = new Room()
+    await room.init(roomId)
     const players = await room.getPlayers()
     res.status(200).json({
       status: 'ok',

@@ -137,7 +137,7 @@ class Player {
           const fileData = editData.icon.replace(/^data:\w+\/\w+;base64,/, '')
           const decodedFile = new Buffer(fileData, 'base64')
           const fileType = filetype(decodedFile)
-          console.log(fileType)
+          // console.log(fileType)
           const fileExtension = fileType.ext //あとでなんとかする
           const contentType = fileType.mime //ここもなんとかする
           const fileName = `${Math.random().toString(32).substring(2)}.${fileExtension}`
