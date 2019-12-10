@@ -9,8 +9,5 @@ module.exports.notif = {
   },
   started (roomId) {
     io.to(roomId).emit('startGame')
-  },
-  sendHand (URL, jankenData) {
-    io.to(URL).emit('sendHand', JSON.stringify({ jankenData }))
   }
 }

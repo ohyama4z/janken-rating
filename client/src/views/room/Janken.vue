@@ -1,9 +1,9 @@
 <template>
   <div>
     <vk-button-group>
-      <vk-button v-bind:type="primary">グー</vk-button>
-      <vk-button v-bind:type="primary">チョキ</vk-button>
-      <vk-button v-bind:type="primary">パー</vk-button>
+      <vk-button @click="sendHand('goo')" v-bind:type="guType">グー</vk-button>
+      <vk-button @click="sendHand('choki')" v-bind:type="chokiType">チョキ</vk-button>
+      <vk-button @click="sendHand('par')" v-bind:type="parType">パー</vk-button>
     </vk-button-group>
   </div>
 </template>
@@ -40,32 +40,41 @@ export default {
       }
       this.players = res.players
       this.limit = res.info.startTime
-     this.$socket.emit()
-      await setTimeout(janeken(hand), Date.now()-this.limit)
+      this.$socket.emit()
+
+      await setTimeout(janeken(), Date.now()-this.limit)
     } catch (err) {
       console.log(err)
     }
     return false
   },
-  sockets: {
-    sendHand (unparsedData) {
-      this.jankenData = JSON.parse(unparsedData)
-    }
-  },
   methods: {
-    sendHand () {
+    sendHand (hand) {
+      this.hand = hand
       const sendObj = {
         roomId: this.roomId,
         players: this.players,
         token: localStorage.getItem('token'),
         hand: this.hand
       }
-      this.$socket.emit('sendHand',JSON.stringify(sendObj))
-    }
-  },
+      await this.$socket.emit('sendHand',JSON.stringify(sendObj))
+    },
+    async janeken () {
+      const sendObj = {
+        token: localStorage.getItem('token'),
+        roomId: this.roomId
+      }
+      const result = await this.$socket.emit('janken',JSON.stringify(sendObj))
+    },
   computed: {
-    guType () {
-      if(this.hand)
+    gooType () {
+      return hand === 'goo' ? 'primary' : ''
+    },
+    chokiType () {
+      return hand === 'choki' ? 'primary' : ''
+    },
+    parType () {
+      return hand === 'par' ? 'primary' : ''
     }
   }
 }

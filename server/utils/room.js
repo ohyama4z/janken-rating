@@ -117,6 +117,56 @@ class Room {
     }
     return true
   }
+
+  async sendHand (data, player) {
+    this.exists()
+    await player.checkAuth()
+    const conn = await mysql2.createConnection(dest)
+    await conn.execute('UPDATE `room_players` SET `hand`=? WHERE `player_id`=?',[data.hand, player.id])
+  }
+
+  async janken () {
+    this.exists()
+    await player.checkAuth()
+    const conn = await mysql2.createConnection(dest)
+    const [rows] = await conn.execute('SELECT `player_id`, `hand` FROM `room_players` WHERE `room_id`=?', [this.id])
+    const hands = {
+      goo: false,
+      choki: false,
+      par: false
+    }
+    rows.forEach( row => {
+      if (row.hand === 'goo') {
+        hands.goo = true
+        return
+      }
+      if (row.hand === 'choki') {
+        hands.choki = true
+        return
+      }
+      if (row.hand === 'par') {
+        hands.par = true
+        return
+      }
+      throw new Error('invaliedHand')
+    })
+
+    let kindHands = 0
+    kindHands += hands.goo ? 1 : 0
+    kindHands += hands.choki ? 1 : 0
+    kindHands += hands.par ? 1 : 0
+
+    if (kindHands !==  2) {
+      //あいこ
+      aiko()
+    }
+    //勝敗決め(hands)
+    katimake(hands, rows)
+  }
+
+  katimake (hands, playerData) {
+    if (hands.goo)
+  }
 }
 
 module.exports = Room

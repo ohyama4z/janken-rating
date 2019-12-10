@@ -161,16 +161,6 @@ class Player {
       }
     })
   }
-
-  async sendHand (data) {
-    await this.checkAuth()
-    const jankenData = {
-      playerId: this.id,
-      hand: data.hand
-    }
-    await notif.startGame(data.roomId,jankenData)
-    return jankenData
-  }
 }
 
 

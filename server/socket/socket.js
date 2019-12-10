@@ -28,27 +28,22 @@ module.exports = (io) => {
       }
     })
 
-    socket.on('startMatch', async (unparsedData) => {
-      try {
-        const player = new Player()
-        const data = JSON.parse(unparsedData)
-        await player.authorize(data.token)
-        const room = new Room()
-        await room.init(data,roomId)
-        await room.
-      } catch (err) {
-        
-      }
-    })
-
-    socket.on('sendHand', (unparsedData) => {
+    socket.on('sendHand', async (unparsedData) => {
       const player = new Player()
       const data = JSON.parse(unparsedData)
-      player.authorize(data.token).then(() => {
-        return player.sendHand(data)
-      }).catch(err => {
-        console.log(err)
-      })
+      await player.authorize(data.token)
+      const room = new Room()
+      await room.init(data.roomId)
+      await room.sendHand(data, player)
+    })
+
+    socket.on('janken', async (unparsedData) => {
+      const player = new Player()
+      const data = JSON.parse(unparsedData)
+      await player.authorize(data.token)
+      const room = new Room()
+      await room.init(data.roomId)
+      await room.janken()
     })
   })
 }
