@@ -43,7 +43,7 @@ module.exports = (io) => {
       await player.authorize(data.token)
       const room = new Room()
       await room.init(data.roomId)
-      await room.janken()
+      await room.janken(player)
     })
   })
 }

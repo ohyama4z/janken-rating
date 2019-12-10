@@ -125,7 +125,7 @@ class Room {
     await conn.execute('UPDATE `room_players` SET `hand`=? WHERE `player_id`=?',[data.hand, player.id])
   }
 
-  async janken () {
+  async janken (player) {
     this.exists()
     await player.checkAuth()
     const conn = await mysql2.createConnection(dest)
@@ -157,15 +157,30 @@ class Room {
     kindHands += hands.par ? 1 : 0
 
     if (kindHands !==  2) {
-      //あいこ
-      aiko()
+      await notif.aiko(this.id)
+      return
     }
-    //勝敗決め(hands)
-    katimake(hands, rows)
+    await jankenWinner(hands, rows)
   }
 
-  katimake (hands, playerData) {
-    if (hands.goo)
+  jankenWinner (hands, rows) {
+    let playerData = []
+    let eachResult = true
+    rows.forEach( row => {
+      if (!hands.goo) {
+        eachResult = row.hand === 'choki' ? true : false
+      } else if (!hands.choki) {
+        eachResult = row.hand === 'par' ? true : false
+      } else if (!hands.par) {
+        eachResult = row.hand === 'goo' ? true : false
+      }
+      playerData.push({
+        id: row.id,
+        hand: row.hand,
+        result: eachResult
+      })
+    })
+    await notif.jankenWinner(this.id,playerData)
   }
 }
 

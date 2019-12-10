@@ -9,5 +9,11 @@ module.exports.notif = {
   },
   started (roomId) {
     io.to(roomId).emit('startGame')
+  },
+  aiko (roomId) {
+    io.to(roomId).emit(`aiko`)
+  },
+  jankenWinner (roomId, playerData) {
+    io.to(roomId).emit('jakenWinner', JSON.stringify(playerData))
   }
 }
