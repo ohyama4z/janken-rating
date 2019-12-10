@@ -42,7 +42,7 @@ class Room {
     const conn = await mysql2.createConnection(dest)
     const enterCode = Math.floor(Math.random() * 10000)
     const roomId = Math.random().toString(32).substring(2)
-    await conn.execute('INSERT INTO `rooms` (`id`, `enter_code`, `state`) VALUES (?,?,`wating`)', [roomId, enterCode])
+    await conn.execute('INSERT INTO `rooms` (`id`, `enter_code`, `state`) VALUES (?,?,?)', [roomId, enterCode,'waiting'])
     this.id = roomId
   }
   async join (player, isLeader = false) {
@@ -103,7 +103,7 @@ class Room {
       throw new Error('youAreNotLeader')
     }
     const limit = Date.now() + 10
-    await conn.execute('UPDATE `rooms` SET `enter_code`=null, `state`=`matching`, `start_time`=? WHERE `id`=?', [limit, this.id])
+    await conn.execute('UPDATE `rooms` SET `enter_code`=null, `state`=?, `start_time`=? WHERE `id`=?', ['matcing', limit, this.id])
     await notif.started(this.id)
   }
 
@@ -163,7 +163,7 @@ class Room {
     await jankenWinner(hands, rows)
   }
 
-  jankenWinner (hands, rows) {
+  async jankenWinner (hands, rows) {
     let playerData = []
     let eachResult = true
     rows.forEach( row => {

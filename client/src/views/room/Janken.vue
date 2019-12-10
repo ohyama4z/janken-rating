@@ -60,7 +60,7 @@ export default {
     }
   },
   methods: {
-    sendHand (hand) {
+    async sendHand (hand) {
       this.hand = hand
       const sendObj = {
         roomId: this.roomId,
@@ -77,15 +77,16 @@ export default {
       }
       const result = await this.$socket.emit('janken',JSON.stringify(sendObj))
     }
+  },
   computed: {
     gooType () {
-      return hand === 'goo' ? 'primary' : ''
+      return this.hand === 'goo' ? 'primary' : ''
     },
     chokiType () {
-      return hand === 'choki' ? 'primary' : ''
+      return this.hand === 'choki' ? 'primary' : ''
     },
     parType () {
-      return hand === 'par' ? 'primary' : ''
+      return this.hand === 'par' ? 'primary' : ''
     }
   }
 }

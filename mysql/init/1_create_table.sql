@@ -70,7 +70,7 @@ CREATE TABLE `players` (
 CREATE TABLE `rooms` (
   `id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `enter_code` int(11) DEFAULT NULL,
-  `start_time` int(11) DEFAULT NULL,
+  `start_time` int(100) DEFAULT NULL,
   `state` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
