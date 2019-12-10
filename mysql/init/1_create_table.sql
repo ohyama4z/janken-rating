@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- ホスト: mysql
--- 生成日時: 2019 年 12 月 09 日 10:19
+-- 生成日時: 2019 年 12 月 10 日 10:41
 -- サーバのバージョン： 8.0.18
 -- PHP のバージョン: 7.2.23
 
@@ -70,7 +70,8 @@ CREATE TABLE `players` (
 CREATE TABLE `rooms` (
   `id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `enter_code` int(11) DEFAULT NULL,
-  `start_time` int(11) DEFAULT NULL
+  `start_time` int(11) DEFAULT NULL,
+  `state` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -82,7 +83,8 @@ CREATE TABLE `rooms` (
 CREATE TABLE `room_players` (
   `room_id` varchar(100) NOT NULL,
   `leader` tinyint(1) NOT NULL,
-  `player_id` int(100) NOT NULL
+  `player_id` int(100) NOT NULL,
+  `hand` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -110,7 +112,8 @@ ALTER TABLE `players`
 -- テーブルのインデックス `rooms`
 --
 ALTER TABLE `rooms`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `enter_code` (`enter_code`);
 
 --
 -- テーブルのインデックス `room_players`
