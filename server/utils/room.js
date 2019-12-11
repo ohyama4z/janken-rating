@@ -173,8 +173,11 @@ class Room {
 
   async aiko (player) {
     const conn = await mysql2.createConnection(dest)
-    await conn.execute('DELETE FROM `room_players` WHERE `player_id`=?', [player.id])
+    await conn.execute('UPDATE `room_players` SET `hand`=null WHERE `player_id`=?', [player.id])
+    const limit = Date.now() + 10000
+    await conn.execute('UPDATE `rooms` SET `enter_code`=null, `start_time`=? WHERE `id`=?', [limit, this.id])
     await notif.aiko(this.id)
+    await setTimeout(() => this.janken(player), limit - Date.now())
   }
 
   async finished (hands, rows) {

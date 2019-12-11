@@ -31,8 +31,8 @@ export default {
   sockets: {
     async aiko () {
       this.aiko = true
-      // ここまでのhandも含めたplayersの情報をうまい具合に読み込みたい(わからん)
-      await this.initialized()
+      this.hand = null
+      // できればここまでのhandも含めたplayersの情報をうまい具合に読み込みたい(わからん)
     },
     finished () {
       this.aiko = false
@@ -62,7 +62,6 @@ export default {
         }
         this.players = res.players
         this.limit = res.info.startTime
-        this.$socket.emit()
         console.log(new Date(Date.now()),new Date(this.limit))
       } catch (err) {
         console.log(err)
