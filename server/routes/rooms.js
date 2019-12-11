@@ -27,6 +27,7 @@ router.get('/:roomId/waiting', async (req, res) => {
     await player.authorize(req.headers.authorization)
     const room = new Room()
 
+    console.log('yell', typeof player)
     await room.init(req.params.roomId)
     const players = await room.getPlayers()
     const info = await room.getInfo(player)
@@ -71,7 +72,7 @@ router.get('/:roomId/matching', async (req, res) => {
     const room = new Room()
     await room.init(roomId)
     const players = await room.getPlayers()
-    const info = await room.getInfo()
+    const info = await room.getInfo(player)
     res.status(200).json({
       status: 'ok',
       players,

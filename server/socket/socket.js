@@ -33,6 +33,7 @@ module.exports = (io) => {
       const data = JSON.parse(unparsedData)
       await player.authorize(data.token)
       const room = new Room()
+      console.log(data)
       await room.init(data.roomId)
       await room.sendHand(data, player)
     })

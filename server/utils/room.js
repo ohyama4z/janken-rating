@@ -78,10 +78,13 @@ class Room {
   // getInfo
   // enterCode, hogehoge === 'waiting', 'playing', 'finished'
   async getInfo (player) {
+    console.log('いぬぬわ', typeof player)
+
     this.exists()
     const conn = await mysql2.createConnection(dest)
     const [res] = await conn.execute('SELECT `enter_code`,`start_time`,`state` FROM `rooms` WHERE `id`=?', [this.id])
     const [leaderId] = await conn.execute('SELECT `player_id` FROM `room_players` WHERE `leader`=1 AND `room_id`=?', [this.id])
+    console.log('あああああ', leaderId[0])
     return {
       enterCode: res[0].enter_code,
       leader: leaderId[0].player_id === player.id,
@@ -102,9 +105,11 @@ class Room {
     if (res[0].leader !== 1) {
       throw new Error('youAreNotLeader')
     }
-    const limit = Date.now() + 10
+    const limit = Date.now() + 10000
+
     await conn.execute('UPDATE `rooms` SET `enter_code`=null, `state`=?, `start_time`=? WHERE `id`=?', ['matcing', limit, this.id])
     await notif.started(this.id)
+    await setTimeout(() => this.janken(player), limit - Date.now())
   }
 
   async hasJoined (player) {
@@ -122,7 +127,8 @@ class Room {
     this.exists()
     await player.checkAuth()
     const conn = await mysql2.createConnection(dest)
-    await conn.execute('UPDATE `room_players` SET `hand`=? WHERE `player_id`=?',[data.hand, player.id])
+
+    await conn.execute('UPDATE `room_players` SET `hand`=? WHERE `player_id`=?', [data.hand, player.id])
   }
 
   async janken (player) {
@@ -135,7 +141,8 @@ class Room {
       choki: false,
       par: false
     }
-    rows.forEach( row => {
+    rows.forEach(row => {
+      console.log(row.hand)
       if (row.hand === 'goo') {
         hands.goo = true
         return
@@ -156,23 +163,30 @@ class Room {
     kindHands += hands.choki ? 1 : 0
     kindHands += hands.par ? 1 : 0
 
-    if (kindHands !==  2) {
-      await notif.aiko(this.id)
+    if (kindHands !== 2) {
+      await this.aiko(player)
+      console.log('あ　い　こ')
       return
     }
-    await jankenWinner(hands, rows)
+    await this.finished(hands, rows)
   }
 
-  async jankenWinner (hands, rows) {
+  async aiko (player) {
+    const conn = await mysql2.createConnection(dest)
+    await conn.execute('DELETE FROM `room_players` WHERE `player_id`=?', [player.id])
+    await notif.aiko(this.id)
+  }
+
+  async finished (hands, rows) {
     let playerData = []
     let eachResult = true
-    rows.forEach( row => {
+    rows.forEach(row => {
       if (!hands.goo) {
-        eachResult = row.hand === 'choki' ? true : false
+        eachResult = row.hand === 'choki'
       } else if (!hands.choki) {
-        eachResult = row.hand === 'par' ? true : false
+        eachResult = row.hand === 'par'
       } else if (!hands.par) {
-        eachResult = row.hand === 'goo' ? true : false
+        eachResult = row.hand === 'goo'
       }
       playerData.push({
         id: row.id,
@@ -180,7 +194,7 @@ class Room {
         result: eachResult
       })
     })
-    await notif.jankenWinner(this.id,playerData)
+    await notif.finished(this.id, playerData)
   }
 }
 

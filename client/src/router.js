@@ -7,7 +7,7 @@ import rooms from './views/rooms'
 import Waiting from './views/room/Waiting'
 import Profile from './views/Profile'
 import Matching from './views/room/Janken'
-// import Ready from './views/rooms/Ready'
+import Result from './views/room/Result'
 
 Vue.use(Router)
 
@@ -49,6 +49,11 @@ export default new Router({
       path: '/rooms/:roomId/matching',
       name: 'matching',
       component: Matching
+    },
+    {
+      path: '/rooms/:roomId/result',
+      name: 'result',
+      component: Result
     }
   ]
 })

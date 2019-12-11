@@ -13,7 +13,7 @@ module.exports.notif = {
   aiko (roomId) {
     io.to(roomId).emit(`aiko`)
   },
-  jankenWinner (roomId, playerData) {
-    io.to(roomId).emit('jakenWinner', JSON.stringify(playerData))
+  finished (roomId) {
+    io.to(roomId).emit('finished')
   }
 }
