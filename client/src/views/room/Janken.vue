@@ -1,5 +1,7 @@
 <template>
   <div>
+    <div class="uk-text-center uk-text-bold">出す手を選ぶ！</div>
+    <div v-if="aiko" class="uk-text-center uk-text-warning uk-text-large">あいこ！！ もう一度選びなおそう！</div>
     <div class="uk-flex uk-flex-center">
       <vk-button-group>
         <vk-button @click="sendHand('goo')" v-bind:type="gooType">グー</vk-button>
@@ -13,12 +15,16 @@
       v-for="player in players"
       v-bind:key="player.id"
     >
-      <div class="uk-flex-left">
+      <div class="uk-text-center">{{player.name}}</div>
+      <div class="uk-flex uk-flex-center">
         <div v-if="player.icon">
-          <img class="uk-border-circle" width="40" height="40" :src="player.icon">
+          <img class="uk-border-circle" width="80" height="80" :src="player.icon">
         </div>
         <div v-else>
           <vk-icon class="uk-border-circle" width="40" height="40" icon="user"></vk-icon>
+        </div>
+        <div v-if="aiko">
+          <img width="80" height="80" :src="player.handImg">
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 <template>
   <div>
+    <a class="uk-link-muted" href="/home">ホームに戻る</a>
     <div class="uk-width-1-2 uk-margin-auto uk-margin-medium">
       <vk-card v-on:click="createRoom()" type="primary">
         <vk-card-title>対戦ルーム作成</vk-card-title>
