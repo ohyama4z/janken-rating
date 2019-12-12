@@ -1,11 +1,29 @@
 <template>
   <div>
-    <vk-button-group>
-      <vk-button @click="sendHand('goo')" v-bind:type="gooType">グー</vk-button>
-      <vk-button @click="sendHand('choki')" v-bind:type="chokiType">チョキ</vk-button>
-      <vk-button @click="sendHand('par')" v-bind:type="parType">パー</vk-button>
-    </vk-button-group>
+    <div class="uk-flex uk-flex-center">
+      <vk-button-group>
+        <vk-button @click="sendHand('goo')" v-bind:type="gooType">グー</vk-button>
+        <vk-button @click="sendHand('choki')" v-bind:type="chokiType">チョキ</vk-button>
+        <vk-button @click="sendHand('par')" v-bind:type="parType">パー</vk-button>
+      </vk-button-group>
+    </div>
+
+    <div
+      class="uk-width-1-2 uk-margin-auto uk-margin-medium"
+      v-for="player in players"
+      v-bind:key="player.id"
+    >
+      <div class="uk-flex-left">
+        <div v-if="player.icon">
+          <img class="uk-border-circle" width="40" height="40" :src="player.icon">
+        </div>
+        <div v-else>
+          <vk-icon class="uk-border-circle" width="40" height="40" icon="user"></vk-icon>
+        </div>
+      </div>
+    </div>
   </div>
+
 </template>
 
 <script>
