@@ -11,7 +11,6 @@ export default {
   data () {
     return {
       players: [],
-
       roomId: null
     }
   },
@@ -25,6 +24,7 @@ export default {
       }
         const response = await fetch(`/api/rooms/${this.roomId}/result`, { method, headers })
         const res = await response.json()
+        this.players = res
     } catch (err) {
       console.log(err)
     }

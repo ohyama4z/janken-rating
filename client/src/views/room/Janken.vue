@@ -24,10 +24,9 @@
           <vk-icon class="uk-border-circle" width="40" height="40" icon="user"></vk-icon>
         </div>
         <div v-if="aiko">
-          <img v-if="player.hand==='goo'" width="80" height="80" src="/goo.jpg">
-          <img v-if="player.hand==='choki'" width="80" height="80" src="/choki.jpg">
-          <img v-if="player.par==='par'" width="80" height="80" src="/par.jpg">
-          {{ player.hand }}
+          <img v-if="player.hand==='goo'" width="80" height="80" src="/goo.png">
+          <img v-if="player.hand==='choki'" width="80" height="80" src="/choki.png">
+          <img v-if="player.hand==='par'" width="80" height="80" src="/par.png">
         </div>
       </div>
     </div>

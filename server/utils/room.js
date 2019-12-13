@@ -244,6 +244,18 @@ class Room {
     })
     await notif.finish(this.id, playerData)
   }
+
+  async getResults (player) {
+    await player.checkAuth()
+    const conn = await mysql2.createConnection(dest)
+    const [players] = await conn.execute('SELECT * FROM `room_players`, `players` WHERE ``=', [this.id])
+    const results = players.map(player => {
+      if (player.result) {
+        player.
+      }
+    })
+    console.log(res)
+    return res
 }
 
 module.exports = Room

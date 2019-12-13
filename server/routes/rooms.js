@@ -83,4 +83,21 @@ router.get('/:roomId/matching', async (req, res) => {
   }
 })
 
+router.get('/:roomId/result', async (req, res) => {
+  try {
+    const roomId = req.params.roomId
+    const player = new Player()
+    player.authorize(req.headers.authorization)
+    const room = new Room()
+    await room.init(roomId)
+    const players = await room.getResults()
+    res.status(200).json({
+      status: 'ok',
+      players
+    })
+  } catch (err) {
+    console.log(err)
+  }
+})
+
 module.exports = router
