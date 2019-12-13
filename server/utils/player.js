@@ -13,153 +13,99 @@ class Player {
     this.id = null
   }
 
-  authorize (token) {
-    const self = this
-    return mysql2.createConnection(dest).then(conn => {
-      return conn.execute('SELECT `id` FROM `session` WHERE `token`=?', [token])
-    }).then(([res]) => {
-      if (res.length === 0) {
-        return Promise.reject(new Error('invalidToken'))
-      }
-      self.id = res[0].id
-      //console.log(res)
-      // //console.log(res[0].id)
-    })
+  async authorize (token) {
+    const conn = await mysql2.createConnection(dest)
+    const [res] = await conn.execute('SELECT `id` FROM `session` WHERE `token`=?', [token])
+    conn.end()
+    if (res.length === 0) {
+      throw new Error('invalidToken')
+    }
+    this.id = res[0].id
   }
 
   checkAuth () {
     if (this.id == null) {
-      return Promise.reject(new Error('unauthorized'))
+      throw new Error('unauthorized')
     }
-    return Promise.resolve()
+    return true
   }
 
-  register (name, plainPass) {
-    return new Promise((resolve, reject) => {
-      if (name.length > 10) {
-        reject(new Error('nameLenErr'))
-        return
-      }
-      if (plainPass.length < 8 && plainPass.length > 64) {
-        reject(new Error('passLenErr'))
-        return
-      }
-      resolve()
-    }).then(() =>
-      mysql2.createConnection(dest)
-    ).then(conn => {
-      return Promise.all([
-        conn,
-        conn.execute('SELECT COUNT(*) AS num FROM `players` WHERE `name`=?', [name])
-      ])
-    }).then(([conn, res]) => {
-      if (res[0].num > 0) {
-        return Promise.reject(new Error('nameConflictedErr'))
-      }
-      return Promise.all([
-        conn,
-        bcrypt.hash(plainPass, saltRounds)
-      ])
-    }).then(([conn, hash]) => {
-      return conn.execute(`INSERT INTO players (name, password) VALUES (?, ?);`, [name, hash])
-    }).then(() => {})
+  async register (name, plainPass) {
+    if (name.length > 10) {
+      throw new Error('nameLenErr')
+    }
+    if (plainPass.length < 8 && plainPass.length > 64) {
+      throw new Error('passLenErr')
+    }
+    const conn = await mysql2.createConnection(dest)
+    const [res] = await conn.execute('SELECT COUNT(*) AS num FROM `players` WHERE `name`=?', [name]) // あやし
+    if (res[0].num > 0) {
+      throw new Error('nameConflictedErr')
+    }
+    const hash = await bcrypt.hash(plainPass, saltRounds)
+    await conn.execute(`INSERT INTO players (name, password) VALUES (?, ?);`, [name, hash])
+    conn.end()
   }
 
-  login (name, plainPass) {
-    return mysql2.createConnection(dest).then(conn => {
-      return Promise.all([
-        conn,
-        conn.execute('SELECT `password`,`id` FROM `players` WHERE `name`=?', [name])
-      ])
-    }).then(([conn, [res]]) => {
-      if (res.length === 0) {
-        return Promise.reject(new Error('unexpectedPas'))
-      }
-      //console.log(plainPass, res)
-      return Promise.all([
-        conn,
-        res[0].id,
-        bcrypt.compare(plainPass, res[0].password)
-      ])
-    }).then(([conn, id, res]) => {
-      //console.log(res)
-      if (!res) {
-        return Promise.reject(new Error('wrongPass'))
-      }
-      const token = Math.random().toString(32).substring(2)
-      return Promise.all([
-        token,
-        conn.execute('INSERT INTO `session` (`id`, `token`) VALUES (?, ?)', [id, token])
-      ])
-    }).then(([token]) => {
-      return token
-    })
+  async login (name, plainPass) {
+    const conn = await mysql2.createConnection(dest)
+    const [res] = await conn.execute('SELECT `password`,`id` FROM `players` WHERE `name`=?', [name])
+    if (res.length === 0) {
+      throw new Error('unexpectedPas')
+    }
+    const id = res[0].id
+    const hash = await bcrypt.compare(plainPass, res[0].password)
+    if (!hash) {
+      throw new Error('wrongPass')
+    }
+    const token = Math.random().toString(32).substring(2)
+    await conn.execute('INSERT INTO `session` (`id`, `token`) VALUES (?, ?)', [id, token])
+    conn.end()
+    return token
   }
 
-  getProfile (id) {
-    return this.checkAuth().then(() => {
-      return mysql2.createConnection(dest)
-    }).then(conn => {
-      return conn.execute('SELECT * FROM `players` WHERE `id`=?', [id])
-    }).then(([res]) => {
-      //console.log(res)
-      const playerData = {
-        id: res[0].id,
-        name: res[0].name,
-        rate: res[0].rating,
-        comment: res[0].comment,
-        icon: res[0].icon != null ? `http://localhost:9000/janken-rating/icons/${res[0].icon}` : null
-      }
-      return playerData
-    })
+  async getProfile (id) {
+    const conn = await mysql2.createConnection(dest)
+    const [res] = await conn.execute('SELECT * FROM `players` WHERE `id`=?', [id])
+    conn.end()
+    const playerData = {
+      id: res[0].id,
+      name: res[0].name,
+      rate: res[0].rating,
+      comment: res[0].comment,
+      icon: res[0].icon != null ? `http://localhost:9000/janken-rating/icons/${res[0].icon}` : null
+    }
+    return playerData
   }
 
-  editProfile (editData) {
-    const self = this
-    return this.checkAuth().then(() => {
-      // console.log(JSON.stringify(editData))
-      if (editData == null || (editData.comment == null && editData.icon == null)) {
-        return Promise.reject(new Error('notexitEditData'))
+  async editProfile (editData) {
+    await this.checkAuth()
+    if (editData == null || (editData.comment == null && editData.icon == null)) {
+      throw new Error('notexitEditData')
+    }
+    const conn = await mysql2.createConnection(dest)
+    if (editData.comment != null) {
+      await conn.execute('UPDATE `players` SET `comment`=? WHERE `id` = ?', [editData.comment, this.id])
+    }
+    if (editData.icon != null) {
+      console.log(editData.icon.substr(0, 10))
+      const fileData = editData.icon.replace(/^data:\w+\/\w+;base64,/, '')
+      const decodedFile = new Buffer(fileData, 'base64')
+      const fileType = filetype(decodedFile)
+      const fileExtension = fileType.ext
+      const contentType = fileType.mime
+      const fileName = `${Math.random().toString(32).substring(2)}.${fileExtension}`
+      const params = {
+        Body: decodedFile,
+        Bucket: 'janken-rating',
+        // Key: [Math.random().toString(32).substring(2), fileExtension].join('.'),
+        Key: `icons/${fileName}`,
+        ContentType: contentType,
+        ACL: 'public-read'
       }
-      return mysql2.createConnection(dest)
-    }).then(conn => {
-      if (editData.comment != null) {
-        return Promise.all([
-          conn,
-          conn.execute('UPDATE `players` SET `comment`=? WHERE `id` = ?', [editData.comment, self.id])
-        ])
-      }
-      return [conn]
-    }).then(([conn]) => {
-      if (editData.icon != null) {
-        return new Promise((resolve, reject) => {
-          console.log(editData.icon.substr(0, 10))
-          const fileData = editData.icon.replace(/^data:\w+\/\w+;base64,/, '')
-          const decodedFile = new Buffer(fileData, 'base64')
-          const fileType = filetype(decodedFile)
-          // console.log(fileType)
-          const fileExtension = fileType.ext
-          const contentType = fileType.mime
-          const fileName = `${Math.random().toString(32).substring(2)}.${fileExtension}`
-          const params = {
-            Body: decodedFile,
-            Bucket: 'janken-rating',
-            // Key: [Math.random().toString(32).substring(2), fileExtension].join('.'),
-            Key: `icons/${fileName}`,
-            ContentType: contentType,
-            ACL: 'public-read'
-          }
-          // console.log(params)
-          s3.putObject(params).promise().then(() => {
-            // console.log('Success!!!')
-            conn.execute('UPDATE `players` SET `icon`=? WHERE `id` = ?', [fileName, self.id])
-            resolve()
-          }).catch((err) => {
-            reject(err)
-          })
-        })
-      }
-    })
+      await s3.putObject(params).promise()
+      await conn.execute('UPDATE `players` SET `icon`=? WHERE `id` = ?', [fileName, this.id])
+    }
   }
 }
 

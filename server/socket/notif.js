@@ -14,7 +14,7 @@ module.exports.notif = {
     const sendData = { players }
     io.to(roomId).emit(`aiko`, JSON.stringify(sendData))
   },
-  finished (roomId, playerData) {
+  finish (roomId, playerData) {
     const sendData = { playerData }
     io.to(roomId).emit('finished', JSON.stringify(sendData))
   }

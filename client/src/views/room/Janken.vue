@@ -24,7 +24,9 @@
           <vk-icon class="uk-border-circle" width="40" height="40" icon="user"></vk-icon>
         </div>
         <div v-if="aiko">
-          <img width="80" height="80" :src="player.handImg">
+          <img v-if="player.hand==='goo'" width="80" height="80" src="/goo.jpg">
+          <img v-if="player.hand==='choki'" width="80" height="80" src="/choki.jpg">
+          <img v-if="player.par==='par'" width="80" height="80" src="/par.jpg">
           {{ player.hand }}
         </div>
       </div>
@@ -47,7 +49,24 @@ export default {
   },
   async mounted () {
     try{
-        await this.initialized()
+      this.roomId = this.$route.params.roomId
+      const sendObj = {
+        roomId: this.roomId,
+        token: localStorage.getItem('token')
+      }
+      const method = 'GET'
+      const headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+        'Authorization': localStorage.getItem('token')
+      }
+      const response = await fetch(`/api/rooms/${this.roomId}/matching`, { method, headers })
+      const res = await response.json()
+      if (res.status !== 'ok') {
+        throw new Error('ばーか')
+      }
+      this.players = res.players
+      this.limit = res.info.startTime
     } catch (err) {
       console.log(err)
     }
@@ -56,10 +75,9 @@ export default {
   sockets: {
     aiko (unparsed) {
       console.log('unparsedData!!!!', unparsed)
-      this.players = JSON.parse(unparsed).players // とかで受け取れるようにサーバ側で実装すれば良さそう
+      this.players = JSON.parse(unparsed).players
       this.aiko = true
       this.hand = null
-      // できればここまでのhandも含めたplayersの情報をうまい具合に読み込みたい(わからん)
     },
     finished (unparsed) {
       this.players = JSON.parse(unparsed).players
@@ -68,33 +86,6 @@ export default {
     }
   },
   methods: {
-    async initialized () {
-      try{
-        this.roomId = this.$route.params.roomId
-        const sendObj = {
-          roomId: this.roomId,
-          token: localStorage.getItem('token')
-        }
-        const method = 'GET'
-        // const body = Object.keys().map((key)=>key+"="+encodeURIComponent()).join("&")
-        const headers = {
-          'Accept': 'application/json',
-          'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
-          'Authorization': localStorage.getItem('token')
-        }
-        const response = await fetch(`/api/rooms/${this.roomId}/matching`, { method, headers })
-        const res = await response.json()
-        // console.log(res)
-        if (res.status !== 'ok') {
-          throw new Error('ばーか')
-        }
-        this.players = res.players
-        this.limit = res.info.startTime
-        // console.log(new Date(Date.now()),new Date(this.limit))
-      } catch (err) {
-        console.log(err)
-      }
-    },
     async sendHand (hand) {
       this.hand = hand
       const sendObj = {
@@ -111,7 +102,7 @@ export default {
         token: localStorage.getItem('token'),
         roomId: this.roomId
       }
-      const result = await this.$socket.emit('janken',JSON.stringify(sendObj))
+      await this.$socket.emit('janken',JSON.stringify(sendObj))
     }
   },
   computed: {

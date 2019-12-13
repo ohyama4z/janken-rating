@@ -27,7 +27,6 @@ router.get('/:roomId/waiting', async (req, res) => {
     await player.authorize(req.headers.authorization)
     const room = new Room()
 
-    console.log('yell', typeof player)
     await room.init(req.params.roomId)
     const players = await room.getPlayers()
     const info = await room.getInfo(player)

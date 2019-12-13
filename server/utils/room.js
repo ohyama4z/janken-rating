@@ -167,17 +167,43 @@ class Room {
       console.log(row)
       throw new Error('invaliedHand')
     })
+    const jadgeRes = this.jadge(hands, rows)
+    if (jadgeRes.aiko) {
+      await this.aiko(player, players)
+      return
+    }
+    await this.finish(jadgeRes, rows)
+  }
 
+  jadge (hands) {
+    const jadgeRes = {
+      aiko: false,
+      winHand: null,
+      loseHand: null
+    }
     let kindHands = 0
     kindHands += hands.goo ? 1 : 0
     kindHands += hands.choki ? 1 : 0
     kindHands += hands.par ? 1 : 0
 
     if (kindHands !== 2) {
-      await this.aiko(player, players)
-      return
+      jadgeRes.aiko = true
+      return jadgeRes
     }
-    await this.finished(hands, rows)
+    if (!hands.goo) {
+      jadgeRes.winHand = 'choki'
+      jadgeRes.loseHand = 'par'
+      return jadgeRes
+    }
+    if (!hands.choki) {
+      jadgeRes.winHand = 'par'
+      jadgeRes.loseHand = 'goo'
+      return jadgeRes
+    }
+    // パーないとき
+    jadgeRes.winHand = 'goo'
+    jadgeRes.loseHand = 'choki'
+    return jadgeRes
   }
 
   insertHand (jankenData, playerData) {
@@ -190,41 +216,33 @@ class Room {
   }
 
   async aiko (player, playersData) {
-    try {
-      const conn = await mysql2.createConnection(dest)
-      await conn.execute('UPDATE `room_players` SET `hand`=null WHERE `player_id`=?', [player.id])
-      const limit = Date.now() + 10000
-      await conn.execute('UPDATE `rooms` SET `enter_code`=null, `start_time`=? WHERE `id`=?', [limit, this.id])
-      conn.end()
-      await notif.aiko(this.id, playersData)
-      await this.start(player, playersData)
-    } catch (err) {
-      console.log(err)
-    }
+    const conn = await mysql2.createConnection(dest)
+    await conn.execute('UPDATE `room_players` SET `hand`=null WHERE `room_id`=?', [this.id])
+    const limit = Date.now() + 10000
+    await conn.execute('UPDATE `rooms` SET `enter_code`=null, `start_time`=? WHERE `id`=?', [limit, this.id])
+    conn.end()
+    await notif.aiko(this.id, playersData)
+    await this.start(player, playersData)
   }
 
-  async finished (hands, rows) {
-    try {
-      let playerData = []
-      let eachResult = true
-      rows.forEach(row => {
-        if (!hands.goo) {
-          eachResult = row.hand === 'choki'
-        } else if (!hands.choki) {
-          eachResult = row.hand === 'par'
-        } else if (!hands.par) {
-          eachResult = row.hand === 'goo'
-        }
-        playerData.push({
-          id: row.id,
-          hand: row.hand,
-          result: eachResult
-        })
-      })
-      await notif.finished(this.id, playerData)  
-    } catch (err) {
-      console.log(err)
-    }
+  async finish (jadgeRes, playerRows) {
+    const playerData = playerRows.map(async row => {
+      const result = row.hand === jadgeRes.winHand
+      const conn = await mysql2.createConnection(dest)
+      await conn.execute('UPDATE `room_players` SET `result`=? WHERE `room_id`=? AND `player_id`=?', [result, this.id, row.player_id])
+      conn.end()
+      return {
+        icon: row.icon != null ? `http://localhost:9000/janken-rating/icons/${row.icon}` : null,
+        leader: row.leader === 1,
+        id: row.player_id,
+        name: row.name,
+        rate: row.rating,
+        comment: row.comment,
+        hand: row.hand,
+        result
+      }
+    })
+    await notif.finish(this.id, playerData)
   }
 }
 
