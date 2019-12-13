@@ -22,7 +22,7 @@ module.exports = (io) => {
         await player.authorize(data.token)
         const room = new Room()
         await room.init(data.roomId)
-        await room.start(player)
+        await room.start(player, data.players)
       } catch (err) {
         console.log(err)
       }
@@ -33,7 +33,6 @@ module.exports = (io) => {
       const data = JSON.parse(unparsedData)
       await player.authorize(data.token)
       const room = new Room()
-      console.log(data)
       await room.init(data.roomId)
       await room.sendHand(data, player)
     })
@@ -44,7 +43,7 @@ module.exports = (io) => {
       await player.authorize(data.token)
       const room = new Room()
       await room.init(data.roomId)
-      await room.janken(player)
+      await room.janken(player, data.players)
     })
   })
 }

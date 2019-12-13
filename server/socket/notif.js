@@ -10,10 +10,12 @@ module.exports.notif = {
   started (roomId) {
     io.to(roomId).emit('startGame')
   },
-  aiko (roomId) {
-    io.to(roomId).emit(`aiko`)
+  aiko (roomId, players) {
+    const sendData = { players }
+    io.to(roomId).emit(`aiko`, JSON.stringify(sendData))
   },
-  finished (roomId) {
-    io.to(roomId).emit('finished')
+  finished (roomId, playerData) {
+    const sendData = { playerData }
+    io.to(roomId).emit('finished', JSON.stringify(sendData))
   }
 }

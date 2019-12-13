@@ -138,8 +138,8 @@ class Player {
           const decodedFile = new Buffer(fileData, 'base64')
           const fileType = filetype(decodedFile)
           // console.log(fileType)
-          const fileExtension = fileType.ext //あとでなんとかする
-          const contentType = fileType.mime //ここもなんとかする
+          const fileExtension = fileType.ext
+          const contentType = fileType.mime
           const fileName = `${Math.random().toString(32).substring(2)}.${fileExtension}`
           const params = {
             Body: decodedFile,
@@ -149,9 +149,9 @@ class Player {
             ContentType: contentType,
             ACL: 'public-read'
           }
-          //console.log(params)
+          // console.log(params)
           s3.putObject(params).promise().then(() => {
-            //console.log('Success!!!')
+            // console.log('Success!!!')
             conn.execute('UPDATE `players` SET `icon`=? WHERE `id` = ?', [fileName, self.id])
             resolve()
           }).catch((err) => {

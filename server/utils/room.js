@@ -21,7 +21,8 @@ class Room {
   async initWithEnterCode (enterCode) {
     // get roomId from enter code
     const conn = await mysql2.createConnection(dest)
-    const [res] = await conn.execute('SELECT `id` FROM `rooms` WHERE `enter_code`=?',[enterCode])
+    const [res] = await conn.execute('SELECT `id` FROM `rooms` WHERE `enter_code`=?', [enterCode])
+    conn.end()
     await this.init(res[0].id)
   }
 
@@ -31,6 +32,7 @@ class Room {
     }
     const conn = await mysql2.createConnection(dest)
     const [res] = await conn.execute('SELECT * FROM `rooms` WHERE `id` = ?', [roomId])
+    conn.end()
     if (res.length === 1) {
       this.id = roomId
       return
@@ -43,6 +45,7 @@ class Room {
     const enterCode = Math.floor(Math.random() * 10000)
     const roomId = Math.random().toString(32).substring(2)
     await conn.execute('INSERT INTO `rooms` (`id`, `enter_code`, `state`) VALUES (?,?,?)', [roomId, enterCode,'waiting'])
+    conn.end()
     this.id = roomId
   }
   async join (player, isLeader = false) {
@@ -51,6 +54,7 @@ class Room {
     const conn = await mysql2.createConnection(dest)
     const leader = isLeader ? 1 : 0
     await conn.execute('INSERT INTO `room_players` (`room_id`, `leader`, `player_id`) VALUES (?, ?, ?)', [this.id,leader, player.id])
+    conn.end()
     const players = await this.getPlayers()
     await notif.joined(this.id, players)
   }
@@ -62,6 +66,7 @@ class Room {
     this.exists()
     const conn = await mysql2.createConnection(dest)
     const [rows] = await conn.execute('SELECT * FROM `players`,`room_players` WHERE players.id=room_players.player_id AND room_players.room_id=?', [this.id])
+    conn.end()
     const players = []
     rows.forEach((row) => {
       players.push({
@@ -78,13 +83,11 @@ class Room {
   // getInfo
   // enterCode, hogehoge === 'waiting', 'playing', 'finished'
   async getInfo (player) {
-    console.log('いぬぬわ', typeof player)
-
     this.exists()
     const conn = await mysql2.createConnection(dest)
     const [res] = await conn.execute('SELECT `enter_code`,`start_time`,`state` FROM `rooms` WHERE `id`=?', [this.id])
     const [leaderId] = await conn.execute('SELECT `player_id` FROM `room_players` WHERE `leader`=1 AND `room_id`=?', [this.id])
-    console.log('あああああ', leaderId[0])
+    conn.end()
     return {
       enterCode: res[0].enter_code,
       leader: leaderId[0].player_id === player.id,
@@ -93,7 +96,7 @@ class Room {
     }
   }
 
-  async start (player) {
+  async start (player, players) {
     this.exists()
     player.checkAuth()
     const conn = await mysql2.createConnection(dest)
@@ -108,8 +111,9 @@ class Room {
     const limit = Date.now() + 10000
 
     await conn.execute('UPDATE `rooms` SET `enter_code`=null, `state`=?, `start_time`=? WHERE `id`=?', ['matcing', limit, this.id])
+    conn.end()
     await notif.started(this.id)
-    await setTimeout(() => this.janken(player), limit - Date.now())
+    await setTimeout(() => this.janken(player, players), limit - Date.now())
   }
 
   async hasJoined (player) {
@@ -117,6 +121,7 @@ class Room {
     await player.checkAuth()
     const conn = await mysql2.createConnection(dest)
     const [res] = await conn.execute('SELECT `player_id` FROM `room_players` WHERE `room_id`=?', [this.id])
+    conn.end()
     if (res.length === 0) {
       throw new Error('notJoined')
     }
@@ -129,20 +134,24 @@ class Room {
     const conn = await mysql2.createConnection(dest)
 
     await conn.execute('UPDATE `room_players` SET `hand`=? WHERE `player_id`=?', [data.hand, player.id])
+    conn.end()
   }
 
-  async janken (player) {
+  async janken (player, playerData) {
     this.exists()
+    let players = []
     await player.checkAuth()
     const conn = await mysql2.createConnection(dest)
     const [rows] = await conn.execute('SELECT `player_id`, `hand` FROM `room_players` WHERE `room_id`=?', [this.id])
+    conn.end()
     const hands = {
       goo: false,
       choki: false,
       par: false
     }
     rows.forEach(row => {
-      console.log(row.hand)
+      players = this.insertHand(row, playerData)
+
       if (row.hand === 'goo') {
         hands.goo = true
         return
@@ -155,6 +164,7 @@ class Room {
         hands.par = true
         return
       }
+      console.log(row)
       throw new Error('invaliedHand')
     })
 
@@ -164,40 +174,57 @@ class Room {
     kindHands += hands.par ? 1 : 0
 
     if (kindHands !== 2) {
-      await this.aiko(player)
-      console.log('あ　い　こ')
+      await this.aiko(player, players)
       return
     }
     await this.finished(hands, rows)
   }
 
-  async aiko (player) {
-    const conn = await mysql2.createConnection(dest)
-    await conn.execute('UPDATE `room_players` SET `hand`=null WHERE `player_id`=?', [player.id])
-    const limit = Date.now() + 10000
-    await conn.execute('UPDATE `rooms` SET `enter_code`=null, `start_time`=? WHERE `id`=?', [limit, this.id])
-    await notif.aiko(this.id)
-    await setTimeout(() => this.janken(player), limit - Date.now())
+  insertHand (jankenData, playerData) {
+    playerData.forEach(player => {
+      if (jankenData.player_id === player.id) {
+        player.hand = jankenData.hand
+      }
+    })
+    return playerData
+  }
+
+  async aiko (player, playersData) {
+    try {
+      const conn = await mysql2.createConnection(dest)
+      await conn.execute('UPDATE `room_players` SET `hand`=null WHERE `player_id`=?', [player.id])
+      const limit = Date.now() + 10000
+      await conn.execute('UPDATE `rooms` SET `enter_code`=null, `start_time`=? WHERE `id`=?', [limit, this.id])
+      conn.end()
+      await notif.aiko(this.id, playersData)
+      await this.start(player, playersData)
+    } catch (err) {
+      console.log(err)
+    }
   }
 
   async finished (hands, rows) {
-    let playerData = []
-    let eachResult = true
-    rows.forEach(row => {
-      if (!hands.goo) {
-        eachResult = row.hand === 'choki'
-      } else if (!hands.choki) {
-        eachResult = row.hand === 'par'
-      } else if (!hands.par) {
-        eachResult = row.hand === 'goo'
-      }
-      playerData.push({
-        id: row.id,
-        hand: row.hand,
-        result: eachResult
+    try {
+      let playerData = []
+      let eachResult = true
+      rows.forEach(row => {
+        if (!hands.goo) {
+          eachResult = row.hand === 'choki'
+        } else if (!hands.choki) {
+          eachResult = row.hand === 'par'
+        } else if (!hands.par) {
+          eachResult = row.hand === 'goo'
+        }
+        playerData.push({
+          id: row.id,
+          hand: row.hand,
+          result: eachResult
+        })
       })
-    })
-    await notif.finished(this.id, playerData)
+      await notif.finished(this.id, playerData)  
+    } catch (err) {
+      console.log(err)
+    }
   }
 }
 

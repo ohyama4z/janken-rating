@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="uk-text-center uk-text-bold">出す手を選ぶ！</div>
+    <div class="uk-text-center uk-text-bold">出す手を選ぼう！</div>
     <div v-if="aiko" class="uk-text-center uk-text-warning uk-text-large">あいこ！！ もう一度選びなおそう！</div>
     <div class="uk-flex uk-flex-center">
       <vk-button-group>
@@ -25,6 +25,7 @@
         </div>
         <div v-if="aiko">
           <img width="80" height="80" :src="player.handImg">
+          {{ player.hand }}
         </div>
       </div>
     </div>
@@ -53,12 +54,15 @@ export default {
     return false
   },
   sockets: {
-    async aiko () {
+    aiko (unparsed) {
+      console.log('unparsedData!!!!', unparsed)
+      this.players = JSON.parse(unparsed).players // とかで受け取れるようにサーバ側で実装すれば良さそう
       this.aiko = true
       this.hand = null
       // できればここまでのhandも含めたplayersの情報をうまい具合に読み込みたい(わからん)
     },
-    finished () {
+    finished (unparsed) {
+      this.players = JSON.parse(unparsed).players
       this.aiko = false
       this.$router.push(`/rooms/${this.roomId}/result`)
     }
@@ -80,13 +84,13 @@ export default {
         }
         const response = await fetch(`/api/rooms/${this.roomId}/matching`, { method, headers })
         const res = await response.json()
-        console.log(res)
+        // console.log(res)
         if (res.status !== 'ok') {
           throw new Error('ばーか')
         }
         this.players = res.players
         this.limit = res.info.startTime
-        console.log(new Date(Date.now()),new Date(this.limit))
+        // console.log(new Date(Date.now()),new Date(this.limit))
       } catch (err) {
         console.log(err)
       }
@@ -103,6 +107,7 @@ export default {
     },
     async janken () {
       const sendObj = {
+        players: this.players,
         token: localStorage.getItem('token'),
         roomId: this.roomId
       }
