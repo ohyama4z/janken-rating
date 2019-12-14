@@ -245,17 +245,45 @@ class Room {
     await notif.finish(this.id, playerData)
   }
 
+  async getAveRate (rows) {
+    let playerNum = 0
+    let sumRate
+    rows.forEach(row => {
+      playerNum += 1
+      sumRate += row.rate
+    })
+    return Math.floor(sumRate/playerNum)
+  }
+
   async getResults (player) {
+    this.exists()
     await player.checkAuth()
     const conn = await mysql2.createConnection(dest)
-    const [players] = await conn.execute('SELECT * FROM `room_players`, `players` WHERE ``=', [this.id])
-    const results = players.map(player => {
-      if (player.result) {
-        player.
+    const [players] = await conn.execute('SELECT * FROM `players`,`room_players` WHERE players.id=room_players.player_id AND room_players.room_id=?', [this.id])
+    const aveRate = this.getAveRate(conn)
+    let eachRate
+    const results = players.map(eachPlayer => {
+      if (eachPlayer.result) {
+        eachRate = Math.floor(eachPlayer.rate + (16 + (aveRate - eachPlayer.rate) * 0.04))
+      } else {
+        eachRate = Math.floor(eachPlayer.rate - (16 + (eachPlayer.rate - aveRate) * 0.04))
+      }
+      conn.execute('UPDATE `players` SET `rate`=? WHERE `id`=?', [eachRate, eachPlayer.id])
+
+      return {
+        icon: eachPlayer.icon != null ? `http://localhost:9000/janken-rating/icons/${row.icon}` : null,
+        leader: eachPlayer.leader === 1,
+        id: eachPlayer.player_id,
+        name: eachPlayer.name,
+        rate: eachRate,
+        comment: eachPlayer.comment,
+        hand: eachPlayer.hand,
+        result: eachPlayer.result
       }
     })
     console.log(res)
     return res
+  }
 }
 
 module.exports = Room
