@@ -11,23 +11,21 @@ export default {
   data () {
     return {
       players: [],
+      myData: {},
       roomId: null
     }
   },
   async mounted () {
-    try {
-      const method = 'GET'
-      const headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
-        'Authorization': localStorage.getItem('token')
-      }
-        const response = await fetch(`/api/rooms/${this.roomId}/result`, { method, headers })
-        const res = await response.json()
-        this.players = res
-    } catch (err) {
-      console.log(err)
+    const method = 'GET'
+    const headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+      'Authorization': localStorage.getItem('token')
     }
+      const response = await fetch(`/api/rooms/${this.roomId}/result`, { method, headers })
+      const res = await response.json()
+      this.players = res.players
+      this.myData = res.myData
   },
   methods: {
     backHome () {

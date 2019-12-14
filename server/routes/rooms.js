@@ -93,7 +93,8 @@ router.get('/:roomId/result', async (req, res) => {
     const players = await room.getResults(player)
     res.status(200).json({
       status: 'ok',
-      players
+      players: results.players,
+      myData: results.myData
     })
   } catch (err) {
     console.log(err)

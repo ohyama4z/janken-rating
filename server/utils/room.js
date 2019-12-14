@@ -260,9 +260,17 @@ class Room {
     await player.checkAuth()
     const conn = await mysql2.createConnection(dest)
     const [players] = await conn.execute('SELECT * FROM `players`,`room_players` WHERE players.id=room_players.player_id AND room_players.room_id=?', [this.id])
+    const oldRate = await conn.execute('SELECT `rate` FROM `players` WHERE `id`=?', [player.id])
     const aveRate = this.getAveRate(conn)
     let eachRate
-    const results = players.map(eachPlayer => {
+    const results = {
+      players: [],
+      myData: {
+        id: player.id,
+        oldRate
+      }
+    }
+    results.players = players.map(eachPlayer => {
       if (eachPlayer.result) {
         eachRate = Math.floor(eachPlayer.rate + (16 + (aveRate - eachPlayer.rate) * 0.04))
       } else {
