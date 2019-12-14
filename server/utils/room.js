@@ -281,8 +281,8 @@ class Room {
         result: eachPlayer.result
       }
     })
-    console.log(res)
-    return res
+    conn.end()
+    return results
   }
 }
 

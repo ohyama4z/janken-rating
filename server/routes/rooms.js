@@ -90,7 +90,7 @@ router.get('/:roomId/result', async (req, res) => {
     player.authorize(req.headers.authorization)
     const room = new Room()
     await room.init(roomId)
-    const players = await room.getResults()
+    const players = await room.getResults(player)
     res.status(200).json({
       status: 'ok',
       players
