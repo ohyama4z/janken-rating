@@ -65,19 +65,30 @@ class Room {
     // this.checkAuth().then(() => {
     this.exists()
     const conn = await mysql2.createConnection(dest)
-    const [rows] = await conn.execute('SELECT * FROM `players`,`room_players` WHERE players.id=room_players.player_id AND room_players.room_id=?', [this.id])
-    conn.end()
-    const players = []
-    rows.forEach((row) => {
-      players.push({
+    const [rows] = await conn.execute(`
+      SELECT 
+        players.id AS id,
+        players.icon AS icon,
+        players.name AS name,
+        players.comment AS comment,
+        room_players.leader AS leader#,
+        # rate.rate AS rate
+      FROM players,room_players
+      WHERE players.id=room_players.player_id AND room_players.room_id=?
+    `, [this.id])
+    console.log(rows)
+    const players = await Promise.all(rows.map(async (row) => {
+      const [rates] = await conn.execute(`SELECT rate FROM rate WHERE player_id=? ORDER BY finish_time DESC LIMIT 1`, [row.id])
+      return{
         icon: row.icon != null ? `http://localhost:9000/janken-rating/icons/${row.icon}` : null,
         leader: row.leader === 1,
-        id: row.player_id,
+        id: row.id,
         name: row.name,
-        rate: row.rating,
+        rate: rates[0].rate,
         comment: row.comment
-      })
-    })
+      }
+    }))
+    conn.end()
     return players
   }
   // getInfo
@@ -85,14 +96,17 @@ class Room {
   async getInfo (player) {
     this.exists()
     const conn = await mysql2.createConnection(dest)
-    const [res] = await conn.execute('SELECT `enter_code`,`start_time`,`state` FROM `rooms` WHERE `id`=?', [this.id])
+    const [res] = await conn.execute('SELECT `enter_code`, `start_time`,`state`,`aiko` FROM `rooms` WHERE `id`=?', [this.id])
     const [leaderId] = await conn.execute('SELECT `player_id` FROM `room_players` WHERE `leader`=1 AND `room_id`=?', [this.id])
     conn.end()
+    console.log(res[0].enter_code)
     return {
       enterCode: res[0].enter_code,
       leader: leaderId[0].player_id === player.id,
-      startTime: res[0].start_time,
-      state: res[0].state
+      startedAt: res[0].start_time - 10000,
+      finishAt: res[0].start_time,
+      state: res[0].state,
+      aiko: res[0].aiko === 1 ? true : false
     }
   }
 
@@ -110,9 +124,13 @@ class Room {
     }
     const limit = Date.now() + 10000
 
-    await conn.execute('UPDATE `rooms` SET `enter_code`=null, `state`=?, `start_time`=? WHERE `id`=?', ['matcing', limit, this.id])
+    await conn.execute('UPDATE `rooms` SET `enter_code`=null, `state`=?,`start_time`=? WHERE `id`=?', ['matching', limit, this.id])
     conn.end()
-    await notif.started(this.id)
+    notif.started(this.id)
+
+    const sendData = await this.getInfo(player)
+    notif.updateInfo(this.id, players, sendData)
+    
     await setTimeout(() => this.janken(player, players), limit - Date.now())
   }
 
@@ -133,16 +151,22 @@ class Room {
     await player.checkAuth()
     const conn = await mysql2.createConnection(dest)
 
-    await conn.execute('UPDATE `room_players` SET `hand`=? WHERE `player_id`=?', [data.hand, player.id])
+    await conn.execute('UPDATE `room_players` SET `hand`=? WHERE `player_id`=? AND `room_id`=?', [data.hand, player.id, this.id])
     conn.end()
   }
 
   async janken (player, playerData) {
+    console.log('aiko')
+    try {
+      throw new Error('getstacktraceOfJanken')
+    } catch (e) {
+      console.log(e)
+    }
     this.exists()
     let players = []
     await player.checkAuth()
     const conn = await mysql2.createConnection(dest)
-    const [rows] = await conn.execute('SELECT `player_id`, `hand` FROM `room_players` WHERE `room_id`=?', [this.id])
+    const [rows] = await conn.execute('SELECT player_id, hand FROM room_players WHERE room_id=?', [this.id])
     conn.end()
     const hands = {
       goo: false,
@@ -216,39 +240,55 @@ class Room {
   }
 
   async aiko (player, playersData) {
+    console.log('aiko')
+    try {
+      throw new Error('getstacktraceOfAiko')
+    } catch (e) {
+      console.log(e)
+    }
     const conn = await mysql2.createConnection(dest)
     await conn.execute('UPDATE `room_players` SET `hand`=null WHERE `room_id`=?', [this.id])
     const limit = Date.now() + 10000
-    await conn.execute('UPDATE `rooms` SET `enter_code`=null, `start_time`=? WHERE `id`=?', [limit, this.id])
-    conn.end()
-    await notif.aiko(this.id, playersData)
+    await conn.execute('UPDATE `rooms` SET `aiko`=1, `start_time`=? WHERE `id`=?', [limit, this.id])
     await this.start(player, playersData)
+    conn.end()
   }
 
   async finish (jadgeRes, playerRows) {
-    const playerData = playerRows.map(async row => {
-      const result = row.hand === jadgeRes.winHand
-      const conn = await mysql2.createConnection(dest)
-      await conn.execute('UPDATE `room_players` SET `result`=? WHERE `room_id`=? AND `player_id`=?', [result, this.id, row.player_id])
-      conn.end()
+    const conn = await mysql2.createConnection(dest)
+
+    const playerRowsWithRate = await Promise.all(playerRows.map(async (row) => {
+      const [oldRateRow] = await conn.execute('SELECT rate FROM rate WHERE player_id=? ORDER BY finish_time DESC LIMIT 1', [row.player_id])
       return {
-        icon: row.icon != null ? `http://localhost:9000/janken-rating/icons/${row.icon}` : null,
-        leader: row.leader === 1,
-        id: row.player_id,
-        name: row.name,
-        rate: row.rating,
-        comment: row.comment,
-        hand: row.hand,
-        result
+        ...row,
+        rate: oldRateRow[0].rate
       }
-    })
-    await notif.finish(this.id, playerData)
+    }))
+    const aveRate = this.getAveRate(playerRowsWithRate)
+
+    await Promise.all(playerRowsWithRate.map(async row => {
+
+      const result = row.hand === jadgeRes.winHand
+      console.log('じふぇおｗ',result , this.id, row.player_id, row)
+      await conn.execute('UPDATE `room_players` SET `result`=? WHERE `room_id`=? AND `player_id`=?', [result, this.id, row.player_id])
+      const oldRate = row.rate
+      console.log('り', result)
+      const newRate = result ? Math.floor(oldRate + (16 + (aveRate - oldRate) * 0.04)) : Math.floor(oldRate - (16 + (oldRate - aveRate) * 0.04))
+      console.log('にゅーれーと', newRate)
+      const finishTime = Date.now()
+      console.log('れーと', oldRate, aveRate)
+      console.log('ｊふぃぺじゃ', row.player_id, this.id, finishTime)
+      await conn.execute('INSERT INTO `rate`(player_id, room_id, rate, finish_time) VALUE (?, ?, ?, ?)', [row.player_id, this.id, newRate, finishTime])
+    }))
+    conn.end()
+    await notif.finish(this.id)
   }
 
-  async getAveRate (rows) {
+  getAveRate (rows) {
     let playerNum = 0
-    let sumRate
+    let sumRate = 0
     rows.forEach(row => {
+      console.log(row)
       playerNum += 1
       sumRate += row.rate
     })
@@ -259,38 +299,48 @@ class Room {
     this.exists()
     await player.checkAuth()
     const conn = await mysql2.createConnection(dest)
-    const [players] = await conn.execute('SELECT * FROM `players`,`room_players` WHERE players.id=room_players.player_id AND room_players.room_id=?', [this.id])
-    const oldRate = await conn.execute('SELECT `rate` FROM `players` WHERE `id`=?', [player.id])
-    const aveRate = this.getAveRate(conn)
-    let eachRate
-    const results = {
-      players: [],
-      myData: {
-        id: player.id,
-        oldRate
-      }
+    const [rows] = await conn.execute(`
+      SELECT 
+        players.id AS id,
+        players.icon AS icon,
+        players.name AS name,
+        players.comment AS comment,
+        room_players.leader AS leader,
+        room_players.hand AS hand,
+        room_players.result AS result
+      FROM players,room_players
+      WHERE players.id=room_players.player_id AND room_players.room_id=?
+    `, [this.id])
+    // const [rates] = await conn.execute(`SELECT rate FROM rate WHERE player_id=? ORDER BY finish_time DESC LIMIT 2`, [player.id])
+    const myData = {
+      playerId: player.id,
+      hand: null,
+      result: null
     }
-    results.players = players.map(eachPlayer => {
-      if (eachPlayer.result) {
-        eachRate = Math.floor(eachPlayer.rate + (16 + (aveRate - eachPlayer.rate) * 0.04))
-      } else {
-        eachRate = Math.floor(eachPlayer.rate - (16 + (eachPlayer.rate - aveRate) * 0.04))
+    const players = await Promise.all(rows.map(async row => {
+      console
+      const [rates] = await conn.execute(`SELECT rate FROM rate WHERE player_id=? ORDER BY finish_time DESC LIMIT 2`, [row.id])
+      if (row.id === myData.playerId) {
+        myData.result = row.result ? 'Win' : 'Lose'
+        myData.hand = row.hand
       }
-      conn.execute('UPDATE `players` SET `rate`=? WHERE `id`=?', [eachRate, eachPlayer.id])
-
       return {
-        icon: eachPlayer.icon != null ? `http://localhost:9000/janken-rating/icons/${row.icon}` : null,
-        leader: eachPlayer.leader === 1,
-        id: eachPlayer.player_id,
-        name: eachPlayer.name,
-        rate: eachRate,
-        comment: eachPlayer.comment,
-        hand: eachPlayer.hand,
-        result: eachPlayer.result
+        icon: row.icon != null ? `http://localhost:9000/janken-rating/icons/${row.icon}` : null,
+        leader: row.leader === 1,
+        id: row.id,
+        name: row.name,
+        rate: rates[0].rate,
+        comment: row.comment,
+        hand: row.hand,
+        result: row.result,
+        oldRate: rates[1].rate
       }
-    })
+    }))
     conn.end()
-    return results
+    return {
+      players,
+      myData
+    }
   }
 }
 

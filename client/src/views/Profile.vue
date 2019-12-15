@@ -1,6 +1,6 @@
 <template>
   <div>
-    <a class="uk-link-muted" href="/home">ホームに戻る</a>
+    <router-link class="uk-link-muted" to="/home">ホームに戻る</router-link>
     <h1 class="uk-text-center@s uk-text-primary">Profile</h1>
     
     <vk-card class="uk-width-1-2@m uk-align-center">

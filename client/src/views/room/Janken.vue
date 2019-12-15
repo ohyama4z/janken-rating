@@ -1,5 +1,6 @@
 <template>
   <div>
+    <progress class="uk-progress" v-bind:value="progress" max="1"></progress>
     <div class="uk-text-center uk-text-bold">出す手を選ぼう！</div>
     <div v-if="aiko" class="uk-text-center uk-text-warning uk-text-large">あいこ！！ もう一度選びなおそう！</div>
     <div class="uk-flex uk-flex-center">
@@ -42,44 +43,55 @@ export default {
       players: [],
       roomId: null,
       hand: null,
-      limit: null,
-      aiko: false
+      aiko: false,
+      startedAt: null,
+      finishAt: null,
+      progress: 0
     }
   },
   async mounted () {
     try{
-      this.roomId = this.$route.params.roomId
-      const sendObj = {
-        roomId: this.roomId,
-        token: localStorage.getItem('token')
-      }
-      const method = 'GET'
-      const headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
-        'Authorization': localStorage.getItem('token')
-      }
-      const response = await fetch(`/api/rooms/${this.roomId}/matching`, { method, headers })
-      const res = await response.json()
-      if (res.status !== 'ok') {
-        throw new Error('ばーか')
-      }
-      this.players = res.players
-      this.limit = res.info.startTime
+        this.roomId = this.$route.params.roomId
+        const sendObj = {
+          roomId: this.roomId,
+          token: localStorage.getItem('token')
+        }
+        this.$socket.emit('getUpdateInfo', JSON.stringify(sendObj))
+        this.hand = null
+      // this.roomId = this.$route.params.roomId
+      
+      // const method = 'GET'
+      // const headers = {
+      //   'Accept': 'application/json',
+      //   'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+      //   'Authorization': localStorage.getItem('token')
+      // }
+      // const response = await fetch(`/api/rooms/${this.roomId}/matching`, { method, headers })
+      // const res = await response.json()
+      // if (res.status !== 'ok') {
+      //   throw new Error('ばーか')
+      // }
+      // this.players = res.players
+      // this.startedAt = res.info.startedAt
+      // this.finishAt = res.info.finishAt
+      
     } catch (err) {
       console.log(err)
     }
     return false
   },
   sockets: {
-    aiko (unparsed) {
+    updateInfo (unparsed) {
+      const data = JSON.parse(unparsed)
       console.log('unparsedData!!!!', unparsed)
-      this.players = JSON.parse(unparsed).players
-      this.aiko = true
-      this.hand = null
+      this.players = data.players
+      this.startedAt = data.startedAt
+      this.finishAt = data.finishAt
+      this.aiko = data.aiko
+      
+      this.updateProgress()
     },
-    finished (unparsed) {
-      this.players = JSON.parse(unparsed).players
+    finished () {
       this.aiko = false
       this.$router.push(`/rooms/${this.roomId}/result`)
     }
@@ -102,6 +114,14 @@ export default {
         roomId: this.roomId
       }
       await this.$socket.emit('janken',JSON.stringify(sendObj))
+    },
+    updateProgress () {
+      this.progress = (Date.now() - this.startedAt)/(this.finishAt - 1000 - this.startedAt)
+      if (this.progress >= 1) {
+        return
+      }
+      // console.log(this.progress)
+      setTimeout(this.updateProgress, 50)
     }
   },
   computed: {

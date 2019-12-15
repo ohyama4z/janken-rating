@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.9.1
+-- version 4.9.2
 -- https://www.phpmyadmin.net/
 --
 -- ホスト: mysql
--- 生成日時: 2019 年 12 月 13 日 14:13
+-- 生成日時: 2019 年 12 月 15 日 11:34
 -- サーバのバージョン： 8.0.18
--- PHP のバージョン: 7.2.23
+-- PHP のバージョン: 7.2.25
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -56,10 +56,22 @@ CREATE TABLE `players` (
   `id` int(11) NOT NULL,
   `name` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `password` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `rating` int(11) NOT NULL DEFAULT '1500',
   `icon` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `comment` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'よろしくお願いします'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- テーブルの構造 `rate`
+--
+
+CREATE TABLE `rate` (
+  `player_id` int(11) DEFAULT NULL,
+  `room_id` varchar(100) DEFAULT NULL,
+  `rate` int(11) DEFAULT NULL,
+  `finish_time` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -71,7 +83,8 @@ CREATE TABLE `rooms` (
   `id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `enter_code` int(11) DEFAULT NULL,
   `start_time` bigint(20) DEFAULT NULL,
-  `state` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
+  `state` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `aiko` tinyint(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

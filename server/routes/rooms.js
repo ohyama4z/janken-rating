@@ -87,16 +87,19 @@ router.get('/:roomId/result', async (req, res) => {
   try {
     const roomId = req.params.roomId
     const player = new Player()
-    player.authorize(req.headers.authorization)
+    await player.authorize(req.headers.authorization)
     const room = new Room()
+    console.log('roomId :', roomId)
     await room.init(roomId)
-    const players = await room.getResults(player)
+    const results = await room.getResults(player)
+    console.log('results!!!!!!!!', results)
     res.status(200).json({
       status: 'ok',
       players: results.players,
       myData: results.myData
     })
   } catch (err) {
+    res.status(500).json({ status: 'ng' })
     console.log(err)
   }
 })

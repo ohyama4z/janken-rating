@@ -38,12 +38,13 @@ class Player {
       throw new Error('passLenErr')
     }
     const conn = await mysql2.createConnection(dest)
-    const [res] = await conn.execute('SELECT COUNT(*) AS num FROM `players` WHERE `name`=?', [name]) // あやし
+    const [res] = await conn.execute('SELECT COUNT(*) AS num FROM `players` WHERE `name`=?', [name])
     if (res[0].num > 0) {
       throw new Error('nameConflictedErr')
     }
     const hash = await bcrypt.hash(plainPass, saltRounds)
-    await conn.execute(`INSERT INTO players (name, password) VALUES (?, ?);`, [name, hash])
+    const [resultSetHeader] = await conn.execute(`INSERT INTO players (name, password) VALUES (?, ?);`, [name, hash])
+    await conn.execute(`INSERT INTO rate (player_id, rate, finish_time) VALUES (?, 1500, ?)`, [resultSetHeader.insertId, Date.now()])
     conn.end()
   }
 
@@ -67,11 +68,12 @@ class Player {
   async getProfile (id) {
     const conn = await mysql2.createConnection(dest)
     const [res] = await conn.execute('SELECT * FROM `players` WHERE `id`=?', [id])
+    const [rate] = await conn.execute('SELECT rate FROM rate WHERE player_id=? ORDER BY finish_time DESC LIMIT 1', [id])
     conn.end()
     const playerData = {
       id: res[0].id,
       name: res[0].name,
-      rate: res[0].rating,
+      rate: rate[0].rate,
       comment: res[0].comment,
       icon: res[0].icon != null ? `http://localhost:9000/janken-rating/icons/${res[0].icon}` : null
     }
