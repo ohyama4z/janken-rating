@@ -9,9 +9,8 @@ services:
     command: server /data
     ports:
       - 9000:9000
-    environment:
-      - MINIO_ACCESS_KEY=janken-rating
-      - MINIO_SECRET_KEY=password
+    env_file: 
+      - ./.env
 
   createbuckets:
     image: minio/mc
@@ -32,21 +31,21 @@ services:
       - ./mysql/data:/var/lib/mysql
       - ./mysql/logs:/var/log/mysql
       - ./mysql/my.cnf:/etc/mysql/my.cnf
-    
+    env_file: 
+      - ./.env
     environment:
       - MYSQL_DATABASE=janken_rating
-      - MYSQL_USER=janken
-      - MYSQL_PASSWORD=rating
-      - MYSQL_ROOT_PASSWORD=pu-sannoho-muranda-bi-
       - TZ=Asia/Tokyo
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
+    env_file: 
+      - ./.env
     environment:
       - PMA_ARBITRARY=1
       - PMA_HOST=mysql
       - PMA_USER=root
-      - PMA_PASSWORD=pu-sannoho-muranda-bi-
+      - PMA_PASSWORD=${MYSQL_ROOT_PASSWORD}
     links:
       - mysql
     ports:
@@ -61,7 +60,7 @@ services:
       - mysql
       - minio
     env_file: 
-      - ./node.env
+      - ./.env
 
   client_dev:
     build: ./client
