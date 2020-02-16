@@ -60,6 +60,8 @@ services:
     links:
       - mysql
       - minio
+    env_file: 
+      - ./node.env
 
   client_dev:
     build: ./client

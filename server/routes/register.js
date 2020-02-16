@@ -3,6 +3,10 @@ const router = express.Router()
 const mysql = require('mysql')
 const bcrypt = require('bcrypt')
 const saltRounds = 10
+const recaptcha = require("recaptcha-promise")
+recaptcha.init({
+  secret_key: process.env.RECAPTCHA_SECRET_KEY
+})
 const connection = mysql.createConnection({
   host: 'mysql',
   user: 'janken',
@@ -11,9 +15,16 @@ const connection = mysql.createConnection({
 })
 const Player = require('../utils/player')
 
-router.post('/', (req, res, next) => {
+router.post('/', async (req, res, next) => {
   const name = req.body.name
   const plainPass = req.body.password
+  const recaptchaRes = req.body.recaptcha
+  const success = await recaptcha(recaptchaRes)
+  if (!success) {
+    res.status(400).json({ status: 'ng', err: 'rechaptchaErr'})
+    return
+  }
+  console.log(success ? "Response valid" : "Response invalid")
   //console.log(name, plainPass)
   const player = new Player()
   player.register(name, plainPass).then(() => {

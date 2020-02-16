@@ -8,16 +8,32 @@
               <input class="uk-input uk-form-width-medium uk-form-large" type="text" v-model="name">
           </div>
       </div>
+
       <div class="uk-margin"> 
         <label class="uk-form-label" for="form-horizontal-text">パスワード🔐</label>
         <div class="uk-form-controls">
         <input class="uk-input uk-form-width-medium uk-form-large" type="password" v-model="password">
         </div>
       </div>
+
+      <div class="uk-margin">
+        <recaptcha
+          sitekey="6LehQ9kUAAAAALdZ7utScbCtawhl52F_bHXbEEtc"
+          :loadRecaptchaScript="true"
+          type="checkbox"
+          v-on:verify="verified"
+        ></recaptcha>
+      </div>
+
       <div v-if="isFailedLogin" class="uk-text-center@s">
         ログインに失敗しました
       </div>
-      <button v-on:click="login()" class="uk-button uk-button-primary">ログイン</button>
+
+      <button
+        v-on:click="login()"
+        v-bind:disabled="!isVerified"
+        class="uk-button uk-button-primary"
+      >ログイン</button>
     </div>
   </div>
 </template>
@@ -30,6 +46,7 @@
 </style>
 
 <script>
+import VueRecaptcha from 'vue-recaptcha'
 
 export default {
   name: 'login',
@@ -38,14 +55,20 @@ export default {
     name: '',
     password: '',
     token: '',
-    isFailedLogin: false
+    isFailedLogin: false,
+    isVerified: false,
+    recaptchaRes: null
     }
+  },
+  components: {
+    recaptcha: VueRecaptcha
   },
   methods: {
     login () {
       const sendObj = {
         name: this.name,
-        password: this.password
+        password: this.password,
+        recaptcha: this.recaptchaRes
       }
       const successed = true
       const method = 'POST'
@@ -76,6 +99,10 @@ export default {
       //   this.isFailedLogin = true
       // })
       return false
+    },
+    verified (response) {
+      this.isVerified = true
+      this.recaptchaRes = response
     }
   }
 }

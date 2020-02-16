@@ -50,10 +50,19 @@
       </div>
 
       <div class="uk-margin">
+        <recaptcha
+          sitekey="6LehQ9kUAAAAALdZ7utScbCtawhl52F_bHXbEEtc"
+          :loadRecaptchaScript="true"
+          type="checkbox"
+          v-on:verify="verified"
+        ></recaptcha>
+      </div>
+
+      <div class="uk-margin">
         <vk-button 
           type="primary"
           v-on:click="register()"
-          v-bind:disabled="!(isNameOk && isPassOk)"
+          v-bind:disabled="!(isNameOk && isPassOk && isVerified)"
         >
           アカウント登録
         </vk-button>
@@ -78,6 +87,8 @@
 
 <script>
 import { Button/*, ButtonLink */} from 'vuikit/lib/button'
+import VueRecaptcha from 'vue-recaptcha'
+
 
 
 export default {
@@ -94,13 +105,15 @@ export default {
       },
       canRegisterName: true,
       isNameValPending: true,
-      isPassValPending: true
-
+      isPassValPending: true,
+      isVerified: false,
+      recaptchaRes: null
     }
   },
   components: {
     VkButton: Button,
     // VkButtonLink: ButtonLink
+    recaptcha: VueRecaptcha
   },
   methods: {
     checkIfEndNamePending () {
@@ -113,7 +126,8 @@ export default {
       const sendObj = {
         //受けとったデータを代入
         name: this.name,
-        password: this.password
+        password: this.password,
+        recaptcha: this.recaptchaRes
       }
       const method = 'POST'
       //http の後の？の部分
@@ -135,6 +149,10 @@ export default {
           }
         }
       })
+    },
+    verified (response) {
+      this.isVerified = true
+      this.recaptchaRes = response
     }
   },
   computed: {

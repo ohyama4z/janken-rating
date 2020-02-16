@@ -9,12 +9,24 @@ const connection = mysql.createConnection({
   password: 'rating',
   database: 'janken_rating'
 })
+const recaptcha = require("recaptcha-promise")
+recaptcha.init({
+  secret_key: process.env.RECAPTCHA_SECRET_KEY
+})
 const Player = require('../utils/player')
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const name = req.body.name
   const plainPass = req.body.password
   const player = new Player()
+  const recaptchaRes = req.body.recaptcha
+  const success = await recaptcha(recaptchaRes)
+  if (!success) {
+    res.status(400).json({ status: 'ng', err: 'rechaptchaErr'})
+    return
+  }
+  console.log(success ? "Response valid" : "Response invalid")
+
   player.login(name, plainPass).then(token => {
     res.status(200).json({ status: 'ok', token })
   }).catch(err => {
