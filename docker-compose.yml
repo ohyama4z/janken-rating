@@ -13,6 +13,18 @@ services:
       - MINIO_ACCESS_KEY=janken-rating
       - MINIO_SECRET_KEY=password
 
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc config host add myminio http://minio:9000 janken-rating password) do echo '...waiting...' && sleep 1; done;
+      /usr/bin/mc mb myminio/janken-rating;
+      /usr/bin/mc policy set public myminio/janken-rating/icons;
+      exit 0;
+      "
+
   mysql:
     image: mysql:8.0
     volumes:
