@@ -6,6 +6,7 @@ services:
     volumes:
       - ./nginx:/etc/nginx/conf.d
       - ./client/dist:/app
+      - /home/www/letsencrypt:/home/www/letsencrypt
     ports:
       - 80:80
 
