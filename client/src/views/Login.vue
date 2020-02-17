@@ -1,5 +1,6 @@
 <template>
   <div class="login">
+    <router-link class="uk-link-muted" to="/register">新規登録</router-link>
     <div class="uk-form-horizontal login-form">
       ログインフォーム
       <div class="uk-margin">

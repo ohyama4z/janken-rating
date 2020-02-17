@@ -80,7 +80,7 @@ class Room {
     const players = await Promise.all(rows.map(async (row) => {
       const [rates] = await conn.execute(`SELECT rate FROM rate WHERE player_id=? ORDER BY finish_time DESC LIMIT 1`, [row.id])
       return{
-        icon: row.icon != null ? `http://localhost:9000/janken-rating/icons/${row.icon}` : null,
+        icon: row.icon != null ? `http://minio.jenkenrating.tk/janken-rating/icons/${row.icon}` : null,
         leader: row.leader === 1,
         id: row.id,
         name: row.name,
@@ -325,7 +325,7 @@ class Room {
         myData.hand = row.hand
       }
       return {
-        icon: row.icon != null ? `http://localhost:9000/janken-rating/icons/${row.icon}` : null,
+        icon: row.icon != null ? `http://minio.jenkenrating.tk/janken-rating/icons/${row.icon}` : null,
         leader: row.leader === 1,
         id: row.id,
         name: row.name,

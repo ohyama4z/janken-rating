@@ -1,6 +1,13 @@
 version: '3.3'
 
 services:
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./client/dist:/app
+    ports:
+      - 80:80
 
   minio:
     image: minio/minio

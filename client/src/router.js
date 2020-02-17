@@ -16,6 +16,10 @@ export default new Router({
   base: process.env.BASE_URL,
   routes: [
     {
+      path: '/',
+      redirect: { name: 'login' }
+    },
+    {
       path: '/register',
       name: 'register',
       component: Register
