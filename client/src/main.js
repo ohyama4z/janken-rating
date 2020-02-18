@@ -6,7 +6,7 @@ import VueSocketIO from 'vue-socket.io'
 
 Vue.use(new VueSocketIO({
   debug: true,
-  connection: 'http://api.jenkenrating.tk'
+  connection: 'https://api.jankenrating.tk'
 }))
 
 // import { Card } from 'vuikit/lib/card'

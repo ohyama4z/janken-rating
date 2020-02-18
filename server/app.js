@@ -2,7 +2,7 @@ const AWS = require('aws-sdk')
 const s3  = new AWS.S3({
     accessKeyId: 'YOUR-ACCESSKEYID' ,
     secretAccessKey: 'YOUR-SECRETACCESSKEY' ,
-    endpoint: 'http://127.0.0.1:9000' ,
+    endpoint: 'https://minio.jankenrating.tk' ,
     s3ForcePathStyle: true, // needed with minio?
     signatureVersion: 'v4'
 })

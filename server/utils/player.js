@@ -75,7 +75,7 @@ class Player {
       name: res[0].name,
       rate: rate[0].rate,
       comment: res[0].comment,
-      icon: res[0].icon != null ? `http://minio.jenkenrating.tk/janken-rating/icons/${res[0].icon}` : null
+      icon: res[0].icon != null ? `https://minio.jankenrating.tk/janken-rating/icons/${res[0].icon}` : null
     }
     return playerData
   }

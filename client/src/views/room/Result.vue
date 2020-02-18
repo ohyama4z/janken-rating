@@ -1,6 +1,6 @@
 <template>
   <div>
-    <router-link class="uk-link-muted" to="home">ホームに戻る</router-link>
+    <router-link class="uk-link-muted" to="/home">ホームに戻る</router-link>
     <h1
       class="uk-text-large uk-text-bold uk-text-center"
       v-bind:class="{
